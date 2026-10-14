@@ -1,0 +1,111 @@
+/* Custom Spotify Theme Extensions */
+:root {
+    --spotify-green: #1DB954;
+    --spotify-green-hover: #1ed760;
+    --spotify-black: #121212;
+    --spotify-dark: #181818;
+    --spotify-gray: #242424;
+    --spotify-gray-light: #2a2a2a;
+    --spotify-text-subdued: #b3b3b3;
+}
+
+body {
+    background-color: var(--spotify-black);
+    color: #ffffff;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    overflow-x: hidden;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #121212;
+}
+::-webkit-scrollbar-thumb {
+    background: #333333;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #555555;
+}
+
+/* Glassmorphism */
+.glass-panel {
+    background: rgba(24, 24, 24, 0.75);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-card {
+    background: rgba(36, 36, 36, 0.6);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+    background: rgba(45, 45, 45, 0.85);
+    border-color: rgba(29, 185, 84, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 0 15px -3px rgba(29, 185, 84, 0.15);
+}
+
+/* Genre Pills */
+.genre-pill {
+    transition: all 0.2s ease;
+    cursor: pointer;
+    user-select: none;
+}
+
+.genre-pill:hover {
+    transform: scale(1.03);
+}
+
+.genre-pill.active {
+    background-color: var(--spotify-green);
+    color: #000000;
+    font-weight: 600;
+    box-shadow: 0 0 14px rgba(29, 185, 84, 0.4);
+}
+
+/* Track list animations */
+.track-row {
+    transition: background-color 0.15s ease;
+}
+
+.track-row:hover {
+    background-color: rgba(255, 255, 255, 0.07);
+}
+
+.track-row.excluded {
+    opacity: 0.45;
+}
+
+/* Audio Player animation */
+@keyframes equalizer {
+    0%, 100% { height: 4px; }
+    50% { height: 16px; }
+}
+
+.eq-bar {
+    display: inline-block;
+    width: 3px;
+    background-color: var(--spotify-green);
+    border-radius: 1px;
+    animation: equalizer 0.8s infinite ease-in-out;
+}
+.eq-bar:nth-child(2) { animation-delay: 0.2s; }
+.eq-bar:nth-child(3) { animation-delay: 0.4s; }
+
+/* Pulse animation for loading states */
+@keyframes glow-pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+.glow-loading {
+    animation: glow-pulse 1.5s infinite ease-in-out;
+}

@@ -1,0 +1,33 @@
+# Environment variables and secrets
+.env
+.cache
+.spotify_token_cache
+
+# Python cache & bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Test & scratch caches
+data/test_artist_cache.json
+scratch/
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
