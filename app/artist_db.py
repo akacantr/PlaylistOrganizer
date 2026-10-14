@@ -1,12 +1,7 @@
-"""
-Pre-compiled Curated Knowledge Base of Top Turkish, Global, and Phonk Artists.
-Used for zero-latency, 100% accurate genre identification.
-"""
 
 from typing import Dict, List
 
 CURATED_ARTISTS: Dict[str, List[str]] = {
-    # ==================== TÜRKÇE RAP / HIP-HOP ====================
     "ezhel": ["turkish hip hop", "turkish rap", "reggae"],
     "uzi": ["turkish drill", "turkish trap", "turkish hip hop"],
     "lvbel c5": ["turkish drill", "turkish trap", "turkish hip hop"],
@@ -65,7 +60,6 @@ CURATED_ARTISTS: Dict[str, List[str]] = {
     "maestro": ["turkish rap"],
     "ashafar": ["turkish trap"],
 
-    # ==================== TÜRKÇE ARABESK & DAMAR ====================
     "müslüm gürses": ["arabesk", "damar", "alaturka"],
     "muslum gurses": ["arabesk", "damar", "alaturka"],
     "ferdi tayfur": ["arabesk", "damar", "fantezi"],
@@ -111,7 +105,6 @@ CURATED_ARTISTS: Dict[str, List[str]] = {
     "özcan deniz": ["fantezi", "turkish pop"],
     "mahsun kırmızıgül": ["fantezi", "arabesk"],
 
-    # ==================== TÜRKÇE ROCK & ANADOLU ROCK ====================
     "duman": ["anadolu rock", "turkish rock", "grunge"],
     "mor ve ötesi": ["turkish rock", "turkish alternative rock"],
     "mor ve otesi": ["turkish rock", "turkish alternative rock"],
@@ -165,7 +158,6 @@ CURATED_ARTISTS: Dict[str, List[str]] = {
     "pentagram": ["turkish metal", "heavy metal", "power metal"],
     "büyük ev ablukada": ["turkish alternative", "indie rock"],
 
-    # ==================== TÜRKÇE POP ====================
     "tarkan": ["turkish pop", "dance-pop"],
     "sezen aksu": ["turkish pop", "turkish singer-songwriter"],
     "ajda pekkan": ["turkish pop", "disco"],
@@ -216,7 +208,6 @@ CURATED_ARTISTS: Dict[str, List[str]] = {
     "gökhan türkmen": ["turkish pop", "acoustic"],
     "soner sarıkabadayı": ["turkish pop"],
 
-    # ==================== TÜRKÇE HALK & ÖZGÜN ====================
     "neşet ertaş": ["halk müziği", "türküler", "bağlama"],
     "neset ertas": ["halk müziği", "türküler"],
     "aşık veysel": ["halk müziği", "türküler"],
@@ -239,7 +230,6 @@ CURATED_ARTISTS: Dict[str, List[str]] = {
     "ahmet kaya": ["özgün", "halk müziği"],
     "grup yorum": ["özgün", "halk müziği"],
 
-    # ==================== PHONK / DRIFT & BASS ====================
     "kordhell": ["phonk", "drift phonk", "gym phonk"],
     "dvrst": ["phonk", "drift phonk", "wave"],
     "hensonn": ["phonk", "drift phonk"],
@@ -296,7 +286,6 @@ CURATED_ARTISTS: Dict[str, List[str]] = {
     "the fifthguys": ["brazilian funk", "phonk"],
     "the late night project": ["brazilian funk", "phonk"],
 
-    # ==================== ELEKTRONİK / DANCE & POPULAR GLOBAL ====================
     "cedric gervais": ["dance", "house", "electro house", "edm"],
     "stromae": ["electronic", "dance-pop", "electropop", "electro house"],
     "feder": ["deep house", "dance", "electronic"],
@@ -357,13 +346,10 @@ CURATED_ARTISTS: Dict[str, List[str]] = {
     "kygo": ["tropical house", "dance-pop", "edm"],
     "lost frequencies": ["deep house", "tropical house", "dance"],
 
-    # ==================== ADDITIONAL IDENTIFIED TOP ARTISTS ====================
-    # Türkçe Rap
     "kayra": ["turkish rap", "boom bap"],
     "farazi v kayra": ["turkish rap", "boom bap"],
     "da poet": ["turkish rap", "boom bap"],
 
-    # Türkçe Rock & Alternatif
     "kolpa": ["turkish rock", "pop rock"],
     "sena şener": ["turkish alternative", "indie pop", "turkish rock"],
     "sena sener": ["turkish alternative", "indie pop", "turkish rock"],
@@ -376,7 +362,6 @@ CURATED_ARTISTS: Dict[str, List[str]] = {
     "gökçe": ["turkish pop", "turkish rock"],
     "gokce": ["turkish pop", "turkish rock"],
 
-    # Türkçe Pop & Nostalji
     "atiye": ["turkish pop", "dance-pop"],
     "erol evgin": ["turkish pop", "nostalji"],
     "murat dalkılıç": ["turkish pop", "dance-pop"],
@@ -407,7 +392,6 @@ CURATED_ARTISTS: Dict[str, List[str]] = {
     "nazlıcan kübra": ["turkish pop", "acoustic"],
     "nazlican kubra": ["turkish pop", "acoustic"],
 
-    # Global Pop, EDM & Rock
     "thefatrat": ["edm", "electronic", "glitch hop", "dance"],
     "the living tombstone": ["electronic rock", "electronic", "soundtrack"],
     "aurora": ["art pop", "indie pop", "electropop"],

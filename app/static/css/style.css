@@ -1,4 +1,3 @@
-/* Custom Spotify Theme Extensions */
 :root {
     --spotify-green: #1DB954;
     --spotify-green-hover: #1ed760;
@@ -16,7 +15,6 @@ body {
     overflow-x: hidden;
 }
 
-/* Custom Scrollbars */
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -32,7 +30,6 @@ body {
     background: #555555;
 }
 
-/* Glassmorphism */
 .glass-panel {
     background: rgba(24, 24, 24, 0.75);
     backdrop-filter: blur(16px);
@@ -54,7 +51,6 @@ body {
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 0 15px -3px rgba(29, 185, 84, 0.15);
 }
 
-/* Genre Pills */
 .genre-pill {
     transition: all 0.2s ease;
     cursor: pointer;
@@ -72,7 +68,6 @@ body {
     box-shadow: 0 0 14px rgba(29, 185, 84, 0.4);
 }
 
-/* Track list animations */
 .track-row {
     transition: background-color 0.15s ease;
 }
@@ -85,7 +80,6 @@ body {
     opacity: 0.45;
 }
 
-/* Audio Player animation */
 @keyframes equalizer {
     0%, 100% { height: 4px; }
     50% { height: 16px; }
@@ -101,7 +95,6 @@ body {
 .eq-bar:nth-child(2) { animation-delay: 0.2s; }
 .eq-bar:nth-child(3) { animation-delay: 0.4s; }
 
-/* Pulse animation for loading states */
 @keyframes glow-pulse {
     0%, 100% { opacity: 0.6; }
     50% { opacity: 1; }

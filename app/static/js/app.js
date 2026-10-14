@@ -1,4 +1,3 @@
-// Spotify Playlist Genre Organizer Frontend Logic
 const app = {
     state: {
         hasCredentials: false,
@@ -9,7 +8,7 @@ const app = {
         filteredPlaylists: [],
         activePlaylist: null,
         analysis: null,
-        genreMode: 'macro', // 'macro' or 'micro'
+        genreMode: 'macro',
         selectedGenres: new Set(),
         selectedTrackIds: new Set(),
         trackSearchQuery: '',
@@ -19,7 +18,6 @@ const app = {
 
     elements: {},
 
-    // Vibrant colors for genre distribution bar
     genreColors: [
         '#1DB954', '#3b82f6', '#ec4899', '#8b5cf6', '#f59e0b',
         '#10b981', '#06b6d4', '#f97316', '#6366f1', '#e11d48',
@@ -74,7 +72,6 @@ const app = {
             this.state.user = data.user;
             this.state.redirectUri = data.redirect_uri || this.state.redirectUri;
 
-            // Update Settings modal elements
             const uriEl = document.getElementById('settings-redirect-uri');
             if (uriEl) uriEl.textContent = this.state.redirectUri;
 
@@ -191,7 +188,6 @@ const app = {
         }
     },
 
-    // --- PLAYLISTS ---
     async loadPlaylists() {
         const loading = document.getElementById('playlists-loading');
         const grid = document.getElementById('playlists-grid');
@@ -284,7 +280,6 @@ const app = {
         lucide.createIcons();
     },
 
-    // --- PLAYLIST ANALYSIS ---
     analysisAbortController: null,
 
     cancelAnalysis() {
@@ -318,7 +313,6 @@ const app = {
             this.state.activePlaylist = data.playlist;
             this.state.analysis = data.analysis;
 
-            // Select all tracks by default
             this.state.selectedTrackIds = new Set(data.analysis.tracks.map(t => t.id));
             this.state.selectedGenres.clear();
             this.state.genreMode = 'macro';
@@ -345,7 +339,6 @@ const app = {
         const pl = this.state.activePlaylist;
         const analysis = this.state.analysis;
 
-        // Header info
         document.getElementById('active-playlist-title').textContent = pl.name;
         document.getElementById('active-playlist-desc').textContent = pl.description || 'Açıklama yok.';
         document.getElementById('active-playlist-owner').textContent = pl.owner;
@@ -360,19 +353,15 @@ const app = {
             coverEl.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(pl.name) + '&background=242424&color=1DB954';
         }
 
-        // Stats cards
         document.getElementById('stat-total-tracks').textContent = analysis.total_tracks;
         document.getElementById('stat-categorized-tracks').textContent = analysis.categorized_count;
         document.getElementById('stat-genres-count').textContent = analysis.macro_genres.length;
         document.getElementById('stat-artists-count').textContent = analysis.unique_artists;
 
-        // Render visual distribution bar
         this.renderDistributionBar();
 
-        // Render genre chips
         this.renderGenreChips();
 
-        // Render tracks table
         this.renderTracksTable();
 
         lucide.createIcons();
@@ -431,7 +420,6 @@ const app = {
             ? this.state.analysis.macro_genres
             : this.state.analysis.micro_genres;
 
-        // "All" chip
         const isAllActive = this.state.selectedGenres.size === 0;
         const allChip = document.createElement('div');
         allChip.className = `genre-pill inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${
@@ -488,7 +476,6 @@ const app = {
     getFilteredTracks() {
         let tracks = this.state.analysis.tracks;
 
-        // Filter by genre
         if (this.state.selectedGenres.size > 0) {
             tracks = tracks.filter(t => {
                 const targetGenres = this.state.genreMode === 'macro' ? t.macro_genres : t.raw_genres;
@@ -496,7 +483,6 @@ const app = {
             });
         }
 
-        // Filter by search text
         if (this.state.trackSearchQuery) {
             const q = this.state.trackSearchQuery;
             tracks = tracks.filter(t =>
@@ -523,7 +509,6 @@ const app = {
             return;
         }
 
-        // Check if all visible tracks are checked
         const allVisibleChecked = tracks.every(t => this.state.selectedTrackIds.has(t.id));
         masterCheckbox.checked = allVisibleChecked;
 
@@ -632,7 +617,6 @@ const app = {
         }
     },
 
-    // --- AUDIO PREVIEW ---
     playPreview(url, title, artist, img) {
         if (!url) {
             this.showToast('Bu parça için Spotify önizlemesi mevcut değil.', 'info');
@@ -691,7 +675,6 @@ const app = {
         }
     },
 
-    // --- CREATE PLAYLIST MODAL ---
     openCreateCustomModal() {
         const selectedUris = this.getSelectedTrackUris();
         if (selectedUris.length === 0) {
@@ -773,7 +756,6 @@ const app = {
         }
     },
 
-    // Quick create single genre playlist from chip "+"
     async quickCreateGenrePlaylist(genreName, event) {
         if (event) event.stopPropagation();
 
@@ -814,7 +796,6 @@ const app = {
         }
     },
 
-    // --- SPLIT ALL GENRES MODAL ---
     openSplitAllModal() {
         const modal = document.getElementById('modal-split-all');
         const listContainer = document.getElementById('split-all-genres-list');
@@ -867,7 +848,6 @@ const app = {
 
         const selectedGenreNames = checkedBoxes.map(cb => cb.value);
 
-        // Group tracks by genre
         const genreData = {};
         selectedGenreNames.forEach(name => {
             genreData[name] = [];
@@ -919,7 +899,6 @@ const app = {
         }
     },
 
-    // --- SUCCESS MODAL ---
     showSuccessModal(title, playlists) {
         const modal = document.getElementById('modal-success');
         document.getElementById('success-modal-title').textContent = title;
@@ -950,7 +929,6 @@ const app = {
         document.getElementById('modal-success').classList.add('hidden');
     },
 
-    // --- SETTINGS MODAL ---
     openSettingsModal() {
         const modal = document.getElementById('modal-settings');
         const uriInput = document.getElementById('cfg-redirect-uri');
@@ -1009,7 +987,6 @@ const app = {
         }
     },
 
-    // --- HELPERS ---
     showToast(message, type = 'info') {
         const container = document.getElementById('toast-container');
         const toast = document.createElement('div');
@@ -1037,12 +1014,10 @@ const app = {
         container.appendChild(toast);
         lucide.createIcons();
 
-        // Animate in
         requestAnimationFrame(() => {
             toast.classList.remove('translate-y-2', 'opacity-0');
         });
 
-        // Auto remove
         setTimeout(() => {
             toast.classList.add('opacity-0', 'translate-y-2');
             setTimeout(() => toast.remove(), 300);
@@ -1067,7 +1042,6 @@ const app = {
     }
 };
 
-// Initialize application on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
     app.init();
 });

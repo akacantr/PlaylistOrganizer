@@ -20,7 +20,6 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS middleware for development flexibility
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -29,16 +28,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount static files
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
-
-# Pydantic Request Models
 class ConfigRequest(BaseModel):
     client_id: str
     client_secret: str
     redirect_uri: Optional[str] = None
-
 
 class CreatePlaylistRequest(BaseModel):
     name: str
@@ -46,14 +41,12 @@ class CreatePlaylistRequest(BaseModel):
     track_uris: List[str]
     is_public: Optional[bool] = False
 
-
 class SplitAllRequest(BaseModel):
     playlist_name: str
-    genre_mode: str = "macro"  # 'macro' or 'micro'
+    genre_mode: str = "macro"
     min_tracks: int = 1
     is_public: bool = False
-    genre_data: Dict[str, List[str]]  # { "Genre Name": ["spotify:track:...", ...] }
-
+    genre_data: Dict[str, List[str]]
 
 @app.get("/", response_class=FileResponse)
 async def serve_index():
@@ -61,7 +54,6 @@ async def serve_index():
     if not index_file.exists():
         raise HTTPException(status_code=404, detail="Index template not found")
     return FileResponse(str(index_file))
-
 
 @app.get("/api/status")
 def get_status():
@@ -87,7 +79,6 @@ def get_status():
         "user": user
     }
 
-
 @app.post("/api/config")
 def save_config(req: ConfigRequest):
     if not req.client_id or not req.client_secret:
@@ -101,7 +92,6 @@ def save_config(req: ConfigRequest):
         "message": "Spotify API ayarları başarıyla kaydedildi.",
         "redirect_uri": redirect_uri
     }
-
 
 @app.get("/api/auth/login")
 def login():
@@ -117,7 +107,6 @@ def login():
 
     return {"auth_url": auth_url}
 
-
 @app.get("/callback")
 def auth_callback(code: Optional[str] = None, error: Optional[str] = None):
     if error:
@@ -132,12 +121,10 @@ def auth_callback(code: Optional[str] = None, error: Optional[str] = None):
 
     return RedirectResponse(url="/?auth=success")
 
-
 @app.post("/api/auth/logout")
 def logout():
     spotify_client.logout()
     return {"success": True, "message": "Çıkış yapıldı."}
-
 
 @app.get("/api/playlists")
 def get_playlists():
@@ -147,18 +134,15 @@ def get_playlists():
     playlists = spotify_client.get_user_playlists()
     return {"playlists": playlists}
 
-
 @app.get("/api/playlist/{playlist_id}/analyze")
 def analyze_playlist(playlist_id: str):
     if not spotify_client.is_authenticated():
         raise HTTPException(status_code=401, detail="Spotify oturumu açılmamış.")
 
-    # 1. Fetch playlist metadata
     playlist_info = spotify_client.get_playlist_details(playlist_id)
     if not playlist_info:
         raise HTTPException(status_code=404, detail="Çalma listesi bulunamadı veya erişilemedi.")
 
-    # 2. Fetch all tracks (paginated)
     try:
         raw_tracks = spotify_client.get_all_playlist_tracks(playlist_id)
     except PermissionError as pe:
@@ -180,7 +164,6 @@ def analyze_playlist(playlist_id: str):
             }
         }
 
-    # 3. Collect unique artist IDs and names (only primary artist of each track for speed)
     artist_names_map = {}
     for item in raw_tracks:
         track = item.get("track")
@@ -191,17 +174,14 @@ def analyze_playlist(playlist_id: str):
                 if aid and aname:
                     artist_names_map[aid] = aname
 
-    # 4. Fetch genres for artists in parallel
     artists_map = spotify_client.batch_get_artists_genres(artist_names_map)
 
-    # 5. Run classification and enrichment
     analysis_result = genre_classifier.analyze_playlist_tracks(raw_tracks, artists_map)
 
     return {
         "playlist": playlist_info,
         "analysis": analysis_result
     }
-
 
 @app.post("/api/playlist/create")
 def create_single_playlist(req: CreatePlaylistRequest):
@@ -225,7 +205,6 @@ def create_single_playlist(req: CreatePlaylistRequest):
         "success": True,
         "playlist": result
     }
-
 
 @app.post("/api/playlist/split-all")
 def split_all_genres(req: SplitAllRequest):

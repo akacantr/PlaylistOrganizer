@@ -10,9 +10,7 @@ from . import config
 
 CACHE_PATH = Path(__file__).resolve().parent.parent / ".spotify_token_cache"
 
-# Global in-memory cache for artist genres
 ARTIST_GENRES_CACHE: Dict[str, Dict[str, Any]] = {}
-
 
 def get_oauth_manager() -> Optional[SpotifyOAuth]:
     if not config.has_valid_credentials():
@@ -28,13 +26,11 @@ def get_oauth_manager() -> Optional[SpotifyOAuth]:
         show_dialog=True
     )
 
-
 def get_auth_url() -> Optional[str]:
     sp_oauth = get_oauth_manager()
     if not sp_oauth:
         return None
     return sp_oauth.get_authorize_url()
-
 
 def handle_callback(code: str) -> Optional[Dict[str, Any]]:
     sp_oauth = get_oauth_manager()
@@ -43,14 +39,12 @@ def handle_callback(code: str) -> Optional[Dict[str, Any]]:
     token_info = sp_oauth.get_access_token(code, as_dict=True)
     return token_info
 
-
 def is_authenticated() -> bool:
     sp_oauth = get_oauth_manager()
     if not sp_oauth:
         return False
     token_info = sp_oauth.validate_token(sp_oauth.cache_handler.get_cached_token())
     return token_info is not None
-
 
 def logout() -> bool:
     global CURRENT_USER_CACHE
@@ -63,7 +57,6 @@ def logout() -> bool:
             return False
     return True
 
-
 def get_spotify_client() -> Optional[spotipy.Spotify]:
     sp_oauth = get_oauth_manager()
     if not sp_oauth:
@@ -75,9 +68,7 @@ def get_spotify_client() -> Optional[spotipy.Spotify]:
 
     return spotipy.Spotify(auth=token_info["access_token"])
 
-
 CURRENT_USER_CACHE: Optional[Dict[str, Any]] = None
-
 
 def get_current_user_profile() -> Optional[Dict[str, Any]]:
     global CURRENT_USER_CACHE
@@ -107,7 +98,6 @@ def get_current_user_profile() -> Optional[Dict[str, Any]]:
     except Exception as e:
         print(f"Error fetching current user profile: {e}")
         return None
-
 
 def get_user_playlists() -> List[Dict[str, Any]]:
     sp = get_spotify_client()
@@ -155,13 +145,11 @@ def get_user_playlists() -> List[Dict[str, Any]]:
                 break
             offset += limit
 
-        # Sort so user's own playlists appear first
         playlists.sort(key=lambda p: (not p["is_mine"], p["name"].lower()))
         return playlists
     except Exception as e:
         print(f"Error fetching playlists: {e}")
         return []
-
 
 def get_playlist_details(playlist_id: str) -> Optional[Dict[str, Any]]:
     sp = get_spotify_client()
@@ -194,7 +182,6 @@ def get_playlist_details(playlist_id: str) -> Optional[Dict[str, Any]]:
         print(f"Error getting playlist details: {e}")
         return None
 
-
 def get_all_playlist_tracks(playlist_id: str) -> List[Dict[str, Any]]:
     sp = get_spotify_client()
     if not sp:
@@ -206,8 +193,6 @@ def get_all_playlist_tracks(playlist_id: str) -> List[Dict[str, Any]]:
 
     try:
         while True:
-            # We do NOT pass fields parameter because Spotify's /items endpoint
-            # uses 'item' instead of 'track', and fields='items(track(...))' strips it.
             response = sp.playlist_items(
                 playlist_id,
                 limit=limit,
@@ -219,10 +204,8 @@ def get_all_playlist_tracks(playlist_id: str) -> List[Dict[str, Any]]:
             for it in items:
                 if not it:
                     continue
-                # In modern Spotify API, track object is in 'item' (or 'track' on legacy)
                 track_data = it.get("item") or it.get("track")
                 if track_data and track_data.get("id"):
-                    # Normalize format so consumers can access item["track"]
                     tracks.append({
                         "track": track_data,
                         "added_at": it.get("added_at")
@@ -243,17 +226,14 @@ def get_all_playlist_tracks(playlist_id: str) -> List[Dict[str, Any]]:
         print(f"Error fetching playlist tracks: {e}")
         raise e
 
-
 import concurrent.futures
 
-# Reusable session for fast connection pooling
 import json
 import threading
 from app.artist_db import CURATED_ARTISTS
 
 HTTP_SESSION = requests.Session()
 
-# Persistent Disk Cache for Artist Genres
 DISK_CACHE_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "artist_cache.json")
 DISK_CACHE_LOCK = threading.Lock()
 DISK_ARTIST_CACHE: Dict[str, List[str]] = {}
@@ -267,7 +247,6 @@ except Exception as e:
     print(f"Error initializing artist disk cache: {e}")
     DISK_ARTIST_CACHE = {}
 
-
 def save_to_disk_cache(artist_clean: str, genres: List[str]):
     with DISK_CACHE_LOCK:
         DISK_ARTIST_CACHE[artist_clean] = genres
@@ -277,29 +256,18 @@ def save_to_disk_cache(artist_clean: str, genres: List[str]):
         except Exception:
             pass
 
-
 def fetch_artist_genre_fallback(artist_name: str) -> List[str]:
-    """
-    High-accuracy multi-tier genre resolver:
-    1. Curated Turkish & Global Artists Knowledge Base (0ms)
-    2. Persistent Disk Cache (0ms)
-    3. Deezer API (Search album genres)
-    4. Deezer Artist Top Album fallback
-    """
     if not artist_name:
         return []
 
     a_clean = artist_name.lower().strip()
 
-    # 1. Check Curated Knowledge Base
     if a_clean in CURATED_ARTISTS:
         return CURATED_ARTISTS[a_clean]
 
-    # 2. Check Disk Cache
     if a_clean in DISK_ARTIST_CACHE:
         return DISK_ARTIST_CACHE[a_clean]
 
-    # 3. Query Deezer API (via track search)
     try:
         url = f"https://api.deezer.com/search?q={requests.utils.quote(artist_name)}&limit=1"
         res = HTTP_SESSION.get(url, timeout=2.5)
@@ -317,7 +285,6 @@ def fetch_artist_genre_fallback(artist_name: str) -> List[str]:
     except Exception:
         pass
 
-    # 4. Query Deezer API (via artist search fallback)
     try:
         url = f"https://api.deezer.com/search/artist?q={requests.utils.quote(artist_name)}&limit=1"
         res = HTTP_SESSION.get(url, timeout=2.5)
@@ -340,17 +307,10 @@ def fetch_artist_genre_fallback(artist_name: str) -> List[str]:
     except Exception:
         pass
 
-    # Save empty so we do not repeatedly spam the network for unknown artists
     save_to_disk_cache(a_clean, [])
     return []
 
-
 def batch_get_artists_genres(artist_names_map: Dict[str, str]) -> Dict[str, Dict[str, Any]]:
-    """
-    Accepts artist_names_map: { artist_id: artist_name }
-    Returns { artist_id: { "name": ..., "genres": [...] } }
-    Uses in-memory caching, disk caching, and parallel ThreadPoolExecutor for high-speed resolution.
-    """
     result_map = {}
     missing_to_fetch = []
 
@@ -368,7 +328,6 @@ def batch_get_artists_genres(artist_names_map: Dict[str, str]) -> Dict[str, Dict
         genres = fetch_artist_genre_fallback(aname)
         return aid, aname, genres
 
-    # Fast parallel resolution
     max_workers = min(8, len(missing_to_fetch))
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
         for aid, aname, genres in executor.map(_resolve, missing_to_fetch):
@@ -381,7 +340,6 @@ def batch_get_artists_genres(artist_names_map: Dict[str, str]) -> Dict[str, Dict
             result_map[aid] = artist_obj
 
     return result_map
-
 
 def create_user_playlist(name: str, description: str, track_uris: List[str], is_public: bool = False) -> Optional[Dict[str, Any]]:
     sp = get_spotify_client()
@@ -402,7 +360,6 @@ def create_user_playlist(name: str, description: str, track_uris: List[str], is_
         playlist_id = new_playlist["id"]
         unique_uris = [u for u in track_uris if u and u.startswith("spotify:track:")]
 
-        # Spotify API allows max 100 tracks per add request
         chunk_size = 100
         for i in range(0, len(unique_uris), chunk_size):
             chunk = unique_uris[i:i + chunk_size]

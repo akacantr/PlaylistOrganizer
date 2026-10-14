@@ -1,6 +1,12 @@
-# 🎵 Spotify Playlist Genre Organizer
+<p align="center">
+  <img src="logo.svg" width="140" height="140" alt="Spotify Playlist Genre Organizer Logo">
+</p>
 
-A modern full-stack web application that analyzes your Spotify playlists, classifies tracks by genre (**Rock, Pop, Hip-Hop, Turkish Rap, Turkish Arabesque, Phonk / Drift & Bass, Metal, Electronic / Dance, R&B, etc.**), and splits them into dedicated new Spotify playlists with a single click.
+<h1 align="center">Spotify Playlist Genre Organizer</h1>
+
+<p align="center">
+  A modern full-stack web application that analyzes your Spotify playlists, classifies tracks by genre (<b>Rock, Pop, Hip-Hop, Turkish Rap, Turkish Arabesque, Phonk / Drift & Bass, Metal, Electronic / Dance, R&B, etc.</b>), and splits them into dedicated new Spotify playlists with a single click.
+</p>
 
 ---
 

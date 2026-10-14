@@ -14,7 +14,6 @@ if sys.platform == "win32":
 
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
-
 def open_browser(url: str, delay: float = 1.2):
     def _open():
         time.sleep(delay)
@@ -22,7 +21,6 @@ def open_browser(url: str, delay: float = 1.2):
         webbrowser.open(url)
 
     threading.Thread(target=_open, daemon=True).start()
-
 
 def main():
     host = "127.0.0.1"
@@ -36,7 +34,6 @@ def main():
 
     open_browser(url)
     uvicorn.run("app.main:app", host=host, port=port, reload=True, log_level="info")
-
 
 if __name__ == "__main__":
     main()
