@@ -1,90 +1,90 @@
 # 🎵 Spotify Playlist Genre Organizer
 
-Spotify çalma listelerinizi analiz edip müzik türlerine göre (**Rock, Pop, Hip-Hop, Türkçe Rap, Türkçe Arabesk, Phonk / Drift & Bass, Metal, Elektronik / Dance, R&B vb.**) sınıflandıran, filtreleyen ve tek tıkla yeni Spotify çalma listelerine ayıran modern full-stack web uygulaması.
+A modern full-stack web application that analyzes your Spotify playlists, classifies tracks by genre (**Rock, Pop, Hip-Hop, Turkish Rap, Turkish Arabesque, Phonk / Drift & Bass, Metal, Electronic / Dance, R&B, etc.**), and splits them into dedicated new Spotify playlists with a single click.
 
 ---
 
-## 🚀 Öne Çıkan Özellikler
+## 🚀 Key Features
 
-- **🔒 Güvenli Spotify OAuth Girişi**: Spotify Developer App üzerinden kendi hesabınıza güvenle bağlanın.
-- **⚡ Çok Katmanlı Akıllı Tür Sınıflandırma Motoru**:
-  - **Yerleşik Bilgi Bankası**: Yüzlerce popüler Türkçe (Rap, Arabesk, Rock, Pop, Halk) ve küresel sanatçıyı 0ms gecikmeyle tanır.
-  - **Deezer API Entegrasyonu**: Spotify'ın Developer Mode kısıtlamalarını aşarak gerçek zamanlı albüm ve tür analizi yapar.
-  - **Kalıcı Disk Önbelleği (`artist_cache.json`)**: Çözümlenen sanatçıları hafızaya alır; listeler sonraki açılışlarda anında yüklenir.
-  - **Başlık & Remix Sezgiseli**: Etiketsiz underground/TikTok parçalarını (`phonk`, `montagem`, `automotivo`, `slowed + reverb`, `hardstyle`, `remix` vb.) otomatik sınıflandırır.
-- **📊 Görsel Dağılım Grafikleri**: Çalma listenizin tür dağılımını yüzdesel barlarla dinamik olarak sunar.
-- **🎯 Esnek Filtreleme & Arama**: Tür etiketlerine tıklayarak listeyi anında daraltın, şarkı veya sanatçı adına göre arayın.
-- **🎧 Şarkı Önizleme Oynatıcısı**: Tarayıcı içerisinden şarkıların önizlemelerini doğrudan dinleyin.
-- **🪄 Tek Tıkla Ayrıştırma ve Dışa Aktarma**:
-  - **Tüm Türleri Otomatik Böl**: Bütün müzik türlerini tek tıkla bağımsız yeni Spotify çalma listelerine dönüştürür.
-  - **Seçileni Oluştur**: Yalnızca seçtiğiniz türü veya şarkıları içeren özel bir liste oluşturur.
-- **🌙 Spotify Koyu Tema UI**: Glassmorphism efektleri, modern animasyonlar ve responsive tasarım.
+- **🔒 Secure Spotify OAuth2 Authentication**: Direct authorization via your own Spotify Developer App credentials.
+- **⚡ Multi-Tier Intelligent Genre Classification Engine**:
+  - **Curated Knowledge Base**: Identifies hundreds of popular Turkish (Rap, Arabesque, Rock, Pop, Folk) and global artists with 0ms latency.
+  - **Deezer API Integration**: Seamlessly resolves real-time artist album and genre metadata to overcome Spotify Developer Mode restrictions.
+  - **Persistent Disk Cache (`artist_cache.json`)**: Caches resolved artists permanently to disk, enabling instant loading on subsequent runs.
+  - **Heuristic Metadata Inference**: Automatically detects untagged underground and TikTok tracks based on title cues (`phonk`, `montagem`, `automotivo`, `slowed + reverb`, `hardstyle`, `remix`, etc.).
+- **📊 Visual Genre Distribution**: Interactive percentage breakdown and distribution bars.
+- **🎯 Flexible Filtering & Search**: Click any genre badge to filter songs instantly, or search by track name and artist.
+- **🎧 Audio Preview Player**: Listen to 30-second audio previews directly in the browser.
+- **🪄 One-Click Playlist Splitting & Exporting**:
+  - **Auto-Split All Genres**: Converts all identified genres into separate new Spotify playlists simultaneously.
+  - **Export Selected Genre**: Creates a custom playlist for just the selected genre or filtered tracks.
+- **🌙 Spotify Dark Mode UI**: Clean glassmorphism styling, smooth transitions, and responsive mobile-ready layout.
 
 ---
 
-## 🛠️ Kurulum ve Çalıştırma
+## 🛠️ Installation & Setup
 
-### 1. Gereksinimler
-- Python 3.9+ yüklü olmalıdır.
+### 1. Prerequisites
+- Python 3.9 or higher installed.
 
-### 2. Projeyi Klonlayın ve Bağımlılıkları Yükleyin
+### 2. Clone the Repository & Install Dependencies
 ```bash
-git clone https://github.com/KULLANICI_ADINIZ/PlaylistOrganizer.git
+git clone https://github.com/YOUR_USERNAME/PlaylistOrganizer.git
 cd PlaylistOrganizer
 pip install -r requirements.txt
 ```
 
-### 3. Spotify Developer Ayarları (2 Dakika)
-1. [Spotify Developer Dashboard](https://developer.spotify.com/dashboard) sayfasına gidin ve giriş yapın.
-2. **"Create app"** butonuna tıklayın:
+### 3. Spotify Developer App Configuration (2 Minutes)
+1. Navigate to the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard) and log in.
+2. Click **"Create app"**:
    - **App name**: `Playlist Organizer`
-   - **App description**: `Çalma listelerini türlerine göre ayıran araç`
-   - **Redirect URIs**: Aşağıdaki iki adresi de ekleyip **Add**'e tıklayın:
+   - **App description**: `Organize and split Spotify playlists by genre`
+   - **Redirect URIs**: Add **both** of the following URIs and click **Add**:
      - `http://127.0.0.1:8888/callback`
      - `http://localhost:8888/callback`
-   - **Which API/SDKs are you planning to use?**: `Web API` seçeneğini işaretleyin.
-3. Şartları kabul edip **Save** deyin.
-4. Açılan sayfada **Settings** sekmesine gidin.
-5. **Client ID** ve **View client secret** diyerek **Client Secret** değerlerini kopyalayın.
+   - **Which API/SDKs are you planning to use?**: Select `Web API`.
+3. Accept the Terms of Service and click **Save**.
+4. Go to the **Settings** tab.
+5. Copy your **Client ID** and click **View client secret** to copy your **Client Secret**.
 
-### 4. Uygulamayı Başlatın
-- Windows için: **`start.bat`** dosyasına çift tıklayın veya terminalden:
+### 4. Run the Application
+- On Windows: Double-click **`start.bat`** or run in terminal:
 ```powershell
 python run.py
 ```
-- Tarayıcınız otomatik olarak `http://127.0.0.1:8888` adresinde açılacaktır.
+- Your browser will automatically open at `http://127.0.0.1:8888`.
 
-### 5. Kullanım
-1. Tarayıcıda sağ üstteki **Ayarlar** (çark) simgesine tıklayın.
-2. Spotify **Client ID** ve **Client Secret** bilgilerinizi yapıştırıp **Kaydet** deyin.
-3. **"Spotify Hesabını Bağla"** butonuna basarak yetkilendirmeyi tamamlayın.
-4. İstediğiniz bir çalma listesini seçin ve müzik türlerine göre organize etmeye başlayın!
+### 5. Usage
+1. Click the **Settings** (gear icon) in the top-right corner.
+2. Enter your **Client ID** and **Client Secret**, then click **Save**.
+3. Click **"Connect Spotify Account"** to authenticate.
+4. Select any playlist and start organizing your tracks by genre!
 
 ---
 
-## 📁 Proje Mimarisi
+## 📁 Project Structure
 
 ```
 PlaylistOrganizer/
 ├── app/
-│   ├── artist_db.py          # Yerleşik sanatçı ve tür bilgi bankası
-│   ├── config.py             # Ortam değişkenleri ve yapılandırma yöneticisi
-│   ├── genre_classifier.py   # Makro/mikro kural ve sezgisel sınıflandırma motoru
-│   ├── main.py               # FastAPI backend rotaları ve API uç noktaları
-│   ├── spotify_client.py     # Spotify OAuth, Deezer API ve veri önbelleği
-│   ├── static/               # CSS stilleri ve Vanilla JS kontrolcüsü
-│   └── templates/            # Responsive Dark Theme HTML arayüzü
+│   ├── artist_db.py          # Pre-compiled artist and genre knowledge base
+│   ├── config.py             # Environment variables and configuration manager
+│   ├── genre_classifier.py   # Macro/micro taxonomy and heuristic inference engine
+│   ├── main.py               # FastAPI backend routes and API endpoints
+│   ├── spotify_client.py     # Spotify OAuth, Deezer API client, and caching
+│   ├── static/               # CSS styles and Vanilla JS application controller
+│   └── templates/            # Responsive Spotify Dark theme HTML UI
 ├── data/
-│   └── artist_cache.json     # 700+ sanatçı için kalıcı tür önbelleği
-├── .env.example              # Örnek yapılandırma şablonu
-├── .gitignore                # Hassas token ve gizli anahtar koruması
-├── README.md                 # Detaylı dokümantasyon
-├── requirements.txt          # Python bağımlılıkları
-├── run.py                    # Uvicorn sunucu başlatıcı
-└── start.bat                 # Tek tıkla Windows başlatıcı
+│   └── artist_cache.json     # Persistent cache for 700+ artist genres
+├── .env.example              # Configuration template
+├── .gitignore                # Protection for secrets and session tokens
+├── README.md                 # Project documentation
+├── requirements.txt          # Python dependencies
+├── run.py                    # Server launcher
+└── start.bat                 # One-click Windows batch launcher
 ```
 
 ---
 
-## 📄 Lisans
-Bu proje [MIT Lisansı](LICENSE) ile lisanslanmıştır.
+## 📄 License
+This project is licensed under the [MIT License](LICENSE).
