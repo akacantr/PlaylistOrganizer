@@ -7,7 +7,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -17,17 +17,13 @@
                 extend: {
                     colors: {
                         spotify: {
-                            green: '#1ed760',
-                            greenHover: '#1fdf64',
-                            greenDark: '#1db954',
-                            black: '#000000',
-                            base: '#121212',
-                            surface: '#181818',
-                            highlight: '#242424',
-                            cardHover: '#282828',
-                            border: '#2e2e2e',
-                            subdued: '#b3b3b3',
-                            muted: '#6a6a6a'
+                            green: '#1DB954',
+                            greenHover: '#1ed760',
+                            black: '#121212',
+                            dark: '#181818',
+                            gray: '#242424',
+                            grayLight: '#2e2e2e',
+                            subdued: '#b3b3b3'
                         }
                     }
                 }
@@ -40,549 +36,535 @@
     <link rel="icon" type="image/svg+xml" href="/static/img/logo.svg">
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
-<body class="bg-black text-white font-['Plus_Jakarta_Sans'] antialiased selection:bg-spotify-green selection:text-black h-screen w-screen overflow-hidden flex flex-col p-2 gap-2">
+<body class="min-h-screen bg-spotify-black text-white flex flex-col font-['Plus_Jakarta_Sans'] antialiased selection:bg-spotify-green selection:text-black">
 
-    <!-- Main Desktop Layout: Sidebar + Viewport -->
-    <div class="flex-1 flex gap-2 overflow-hidden min-h-0">
-        
-        <!-- Left Sidebar (Authentic Spotify Desktop) -->
-        <aside class="w-64 lg:w-72 hidden md:flex flex-col gap-2 shrink-0 select-none">
-            <!-- Top Box: Brand & Main Nav -->
-            <div class="bg-spotify-base rounded-lg p-5 flex flex-col gap-4">
-                <div class="flex items-center gap-2.5 cursor-pointer" onclick="app.showHomeView()">
-                    <div class="w-8 h-8 rounded-full bg-spotify-green flex items-center justify-center text-black shadow-md shadow-spotify-green/20">
-                        <!-- Spotify 3 Waves Icon SVG -->
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                            <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.207-2.35-1.435-5.308-1.76-8.792-.963-.335.077-.67-.133-.746-.468-.077-.334.132-.67.467-.746 3.808-.87 7.076-.496 9.72 1.115.295.18.388.562.208.855zm1.225-2.724c-.226.367-.706.482-1.072.257-2.69-1.653-6.79-2.133-9.97-1.167-.413.125-.849-.106-.975-.518-.125-.413.106-.849.518-.975 3.632-1.103 8.147-.568 11.242 1.33.366.226.482.707.257 1.073zm.105-2.835C14.692 8.95 8.085 8.73 4.244 9.897c-.494.15-1.02-.132-1.17-.626-.15-.493.132-1.02.626-1.17 4.417-1.34 11.67-1.09 15.42 1.137.443.264.59.837.327 1.28-.264.444-.838.59-1.28.327z"/>
-                        </svg>
+    <header class="sticky top-0 z-40 bg-[#0e0e0e]/75 backdrop-blur-2xl -webkit-backdrop-blur-2xl border-b border-white/[0.07] px-4 sm:px-6 py-2.5 transition-all shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_32px_-12px_rgba(0,0,0,0.6)]">
+        <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3 cursor-pointer group select-none" onclick="app.showHomeView()">
+                <div class="relative w-9 h-9 rounded-xl overflow-hidden bg-gradient-to-b from-white/10 to-white/[0.02] p-[1px] shadow-[0_2px_8px_rgba(0,0,0,0.3)] group-hover:scale-105 active:scale-95 transition-transform duration-200">
+                    <div class="w-full h-full rounded-[11px] bg-black/60 flex items-center justify-center backdrop-blur-sm">
+                        <img src="/static/img/logo.svg" alt="Logo" class="w-5 h-5 object-contain">
                     </div>
-                    <div>
-                        <span class="font-extrabold text-sm tracking-tight text-white flex items-center gap-1.5">
-                            Playlist Organizer
-                            <span class="text-[9px] font-bold uppercase px-1.5 py-0.2 rounded bg-spotify-green/20 text-spotify-green border border-spotify-green/30">Pro</span>
-                        </span>
+                </div>
+                <div>
+                    <h1 class="text-[15px] font-semibold tracking-[-0.015em] text-white/95 group-hover:text-white transition-colors">
+                        Playlist Organizer
+                    </h1>
+                </div>
+            </div>
+
+            <div id="nav-segmented-tabs" class="hidden md:flex items-center p-1 rounded-full bg-white/[0.04] border border-white/[0.06] backdrop-blur-xl shadow-inner">
+                <button id="nav-tab-playlists" onclick="app.showPlaylistsView()" class="nav-segmented-item active px-3.5 py-1 rounded-full text-xs font-medium tracking-tight transition-all duration-200 flex items-center gap-1.5">
+                    <i data-lucide="library" class="w-3.5 h-3.5"></i>
+                    <span>Çalma Listeleri</span>
+                </button>
+                <button id="nav-tab-analysis" onclick="app.showAnalysisView()" class="nav-segmented-item hidden px-3.5 py-1 rounded-full text-xs font-medium tracking-tight text-white/60 hover:text-white transition-all duration-200 flex items-center gap-1.5">
+                    <i data-lucide="pie-chart" class="w-3.5 h-3.5"></i>
+                    <span id="nav-analysis-title">Tür Analizi</span>
+                </button>
+            </div>
+
+            <div class="flex items-center gap-2 sm:gap-2.5">
+                <div id="user-pill" class="hidden items-center gap-2 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] rounded-full pl-1.5 pr-3 py-1 shadow-sm backdrop-blur-md transition-all">
+                    <img id="user-avatar" src="" alt="Avatar" class="w-5 h-5 rounded-full object-cover ring-1 ring-white/20 bg-white/10">
+                    <span id="user-name" class="text-[12px] font-medium text-white/90 max-w-[120px] truncate">Kullanıcı</span>
+                </div>
+
+                <button onclick="app.openSettingsModal()" class="w-8 h-8 rounded-full flex items-center justify-center bg-white/[0.04] hover:bg-white/[0.09] active:scale-95 border border-white/[0.06] text-white/70 hover:text-white transition-all shadow-sm" title="API Ayarları">
+                    <i data-lucide="settings" class="w-4 h-4"></i>
+                </button>
+
+                <button id="logout-btn" onclick="app.logout()" class="hidden w-8 h-8 rounded-full flex items-center justify-center bg-white/[0.04] hover:bg-red-500/15 active:scale-95 border border-white/[0.06] hover:border-red-500/30 text-white/60 hover:text-red-400 transition-all shadow-sm" title="Çıkış Yap">
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 pb-28">
+
+        
+        <section id="view-auth" class="hidden min-h-[75vh] flex flex-col items-center justify-center text-center">
+            <div class="max-w-xl mx-auto p-8 glass-panel rounded-3xl shadow-2xl relative overflow-hidden">
+                <div class="absolute -top-24 -right-24 w-48 h-48 bg-spotify-green/20 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -bottom-24 -left-24 w-48 h-48 bg-spotify-green/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                <div class="w-20 h-20 mx-auto rounded-3xl bg-spotify-green/10 border border-spotify-green/30 flex items-center justify-center text-spotify-green mb-6 shadow-inner">
+                    <i data-lucide="disc-3" class="w-10 h-10 animate-spin" style="animation-duration: 10s;"></i>
+                </div>
+
+                <h2 class="text-3xl font-extrabold tracking-tight mb-3">Spotify Çalma Listelerini Keşfet ve Türlere Böl</h2>
+                <p class="text-spotify-subdued text-sm mb-8 leading-relaxed">
+                    Karışık çalma listelerindeki şarkıları otomatik olarak analiz edin, müzik türlerini tespit edin ve dilediğiniz türleri tek tıkla yepyeni Spotify çalma listelerine dönüştürün.
+                </p>
+
+                
+                <div id="auth-credentials-needed" class="hidden text-left bg-black/40 border border-yellow-500/30 rounded-2xl p-5 mb-6">
+                    <div class="flex items-start gap-3">
+                        <i data-lucide="alert-triangle" class="w-5 h-5 text-yellow-400 shrink-0 mt-0.5"></i>
+                        <div>
+                            <h4 class="text-sm font-bold text-yellow-300">Spotify API Ayarları Gerekli</h4>
+                            <p class="text-xs text-spotify-subdued mt-1">
+                                Spotify hesabınıza güvenle bağlanabilmek için Spotify Developer Dashboard'dan aldığınız Client ID ve Client Secret bilgilerini girmeniz gerekir.
+                            </p>
+                            <button onclick="app.openSettingsModal()" class="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-yellow-500/20 text-yellow-300 border border-yellow-500/40 text-xs font-semibold hover:bg-yellow-500/30 transition">
+                                <i data-lucide="sliders" class="w-3.5 h-3.5"></i>
+                                Ayarları Şimdi Yapılandır
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <nav class="flex flex-col gap-1 text-sm font-bold text-spotify-subdued">
-                    <button onclick="app.showHomeView()" class="flex items-center gap-4 px-3 py-2.5 rounded-md hover:text-white transition group text-left">
-                        <i data-lucide="home" class="w-5 h-5 text-spotify-subdued group-hover:text-white transition"></i>
-                        <span>Ana Sayfa</span>
+                
+                <div id="auth-ready" class="flex flex-col items-center gap-4">
+                    <button onclick="app.loginWithSpotify()" class="inline-flex items-center gap-3 px-8 py-4 rounded-full bg-spotify-green hover:bg-spotify-greenHover text-black font-bold text-base shadow-lg shadow-spotify-green/30 hover:scale-[1.02] active:scale-95 transition">
+                        <i data-lucide="log-in" class="w-5 h-5"></i>
+                        Spotify Hesabını Bağla
                     </button>
-                    <button onclick="app.focusSearch()" class="flex items-center gap-4 px-3 py-2.5 rounded-md hover:text-white transition group text-left">
-                        <i data-lucide="search" class="w-5 h-5 text-spotify-subdued group-hover:text-white transition"></i>
-                        <span>Ara</span>
-                    </button>
-                </nav>
+                    <p class="text-xs text-spotify-subdued">Giriş yaptıktan sonra çalma listeleriniz güvenli şekilde listelenecektir.</p>
+                </div>
             </div>
+        </section>
 
-            <!-- Bottom Box: Your Library (Kitaplığın) -->
-            <div class="bg-spotify-base rounded-lg flex-1 flex flex-col overflow-hidden p-3 min-h-0">
-                <div class="flex items-center justify-between px-3 py-2 mb-2">
-                    <button onclick="app.showPlaylistsView()" class="flex items-center gap-3 text-spotify-subdued hover:text-white font-bold text-sm transition">
-                        <i data-lucide="library" class="w-5 h-5"></i>
-                        <span>Kitaplığın</span>
-                    </button>
-                    <button onclick="app.loadPlaylists()" class="p-1.5 rounded-full hover:bg-white/10 text-spotify-subdued hover:text-white transition" title="Yenile">
+        
+        <section id="view-playlists" class="hidden">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                <div>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Çalma Listeni Seç</h2>
+                    <p class="text-sm text-spotify-subdued mt-1">Türlerine göre ayırmak istediğin bir çalma listesine tıkla.</p>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    
+                    <div class="relative w-full md:w-72">
+                        <i data-lucide="search" class="w-4 h-4 text-spotify-subdued absolute left-3 top-1/2 -translate-y-1/2"></i>
+                        <input id="playlist-search" type="text" placeholder="Playlist ara..." oninput="app.filterPlaylists(this.value)" class="w-full bg-spotify-gray/80 border border-white/10 rounded-full pl-9 pr-4 py-2 text-sm text-white placeholder-spotify-subdued focus:outline-none focus:border-spotify-green transition">
+                    </div>
+
+                    
+                    <button onclick="app.loadPlaylists()" class="p-2.5 bg-spotify-gray hover:bg-white/10 border border-white/10 rounded-full text-spotify-subdued hover:text-white transition" title="Yenile">
                         <i data-lucide="rotate-cw" class="w-4 h-4"></i>
                     </button>
                 </div>
-
-                <!-- Filter pill -->
-                <div class="px-3 mb-2 flex items-center gap-2">
-                    <span class="text-xs font-semibold px-3 py-1.5 rounded-full bg-spotify-highlight text-white hover:bg-spotify-cardHover cursor-pointer transition">
-                        Çalma Listeleri
-                    </span>
-                </div>
-
-                <!-- Sidebar playlists scroll container -->
-                <div id="sidebar-playlists-list" class="flex-1 overflow-y-auto space-y-0.5 pr-1 text-xs">
-                    <div class="p-3 text-center text-spotify-muted italic">Yükleniyor...</div>
-                </div>
             </div>
-        </aside>
 
-        <!-- Main Viewport (Right Panel) -->
-        <main class="flex-1 bg-spotify-base rounded-lg overflow-y-auto flex flex-col relative min-h-0 select-text" id="main-scroll-container">
             
-            <!-- Sticky Spotify Top Bar -->
-            <header class="sticky top-0 z-30 h-16 bg-spotify-base/95 backdrop-blur-md px-6 flex items-center justify-between border-b border-transparent transition-all">
-                <!-- Navigation Arrows -->
-                <div class="flex items-center gap-2">
-                    <button onclick="app.backToPlaylists()" class="w-8 h-8 rounded-full bg-black/60 hover:bg-black/90 flex items-center justify-center text-white transition disabled:opacity-40" title="Geri">
-                        <i data-lucide="chevron-left" class="w-5 h-5"></i>
-                    </button>
-                    <button class="w-8 h-8 rounded-full bg-black/30 flex items-center justify-center text-spotify-muted cursor-not-allowed" disabled>
-                        <i data-lucide="chevron-right" class="w-5 h-5"></i>
-                    </button>
-
-                    <!-- Top Bar Search (Playlists View) -->
-                    <div id="topbar-search-container" class="ml-2 relative w-72 sm:w-80 hidden md:block">
-                        <i data-lucide="search" class="w-4 h-4 text-spotify-subdued absolute left-3.5 top-1/2 -translate-y-1/2"></i>
-                        <input id="playlist-search" type="text" placeholder="Ne dinlemek veya ayırmak istiyorsun?" oninput="app.filterPlaylists(this.value)" class="w-full bg-spotify-highlight hover:bg-spotify-cardHover focus:bg-spotify-highlight border border-transparent focus:border-white/30 rounded-full pl-10 pr-4 py-2 text-xs sm:text-sm text-white placeholder-spotify-muted focus:outline-none transition">
-                    </div>
-                </div>
-
-                <!-- Right Action Pill / User Profile -->
-                <div class="flex items-center gap-3">
-                    <!-- User Pill -->
-                    <div id="user-pill" class="hidden items-center gap-2 bg-black/60 hover:bg-spotify-highlight border border-white/10 rounded-full p-1 pr-3 cursor-pointer transition">
-                        <img id="user-avatar" src="" alt="Avatar" class="w-6 h-6 rounded-full object-cover bg-white/10">
-                        <span id="user-name" class="text-xs font-bold text-white max-w-[120px] truncate">Kullanıcı</span>
-                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-spotify-subdued"></i>
-                    </div>
-
-                    <!-- API Settings Button -->
-                    <button onclick="app.openSettingsModal()" class="w-9 h-9 rounded-full bg-black/40 hover:bg-white/10 text-spotify-subdued hover:text-white flex items-center justify-center transition" title="Spotify API Ayarları">
-                        <i data-lucide="settings" class="w-4 h-4"></i>
-                    </button>
-
-                    <!-- Logout Button -->
-                    <button id="logout-btn" onclick="app.logout()" class="hidden w-9 h-9 rounded-full bg-black/40 hover:bg-red-500/20 text-spotify-subdued hover:text-red-400 flex items-center justify-center transition" title="Çıkış Yap">
-                        <i data-lucide="log-out" class="w-4 h-4"></i>
-                    </button>
-                </div>
-            </header>
-
-            <!-- Inner Views Container -->
-            <div class="flex-1 px-4 sm:px-8 py-4 pb-28">
-
-                <!-- 1. AUTH VIEW -->
-                <section id="view-auth" class="hidden min-h-[70vh] flex flex-col items-center justify-center text-center">
-                    <div class="max-w-md mx-auto p-8 bg-spotify-surface rounded-2xl border border-white/5 relative overflow-hidden shadow-2xl">
-                        <div class="w-20 h-20 mx-auto rounded-full bg-spotify-green flex items-center justify-center text-black mb-6 shadow-xl shadow-spotify-green/20">
-                            <!-- Large Spotify Icon -->
-                            <svg class="w-12 h-12 fill-current" viewBox="0 0 24 24">
-                                <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.207-2.35-1.435-5.308-1.76-8.792-.963-.335.077-.67-.133-.746-.468-.077-.334.132-.67.467-.746 3.808-.87 7.076-.496 9.72 1.115.295.18.388.562.208.855zm1.225-2.724c-.226.367-.706.482-1.072.257-2.69-1.653-6.79-2.133-9.97-1.167-.413.125-.849-.106-.975-.518-.125-.413.106-.849.518-.975 3.632-1.103 8.147-.568 11.242 1.33.366.226.482.707.257 1.073zm.105-2.835C14.692 8.95 8.085 8.73 4.244 9.897c-.494.15-1.02-.132-1.17-.626-.15-.493.132-1.02.626-1.17 4.417-1.34 11.67-1.09 15.42 1.137.443.264.59.837.327 1.28-.264.444-.838.59-1.28.327z"/>
-                            </svg>
-                        </div>
-
-                        <h2 class="text-2xl sm:text-3xl font-black tracking-tight text-white mb-2">Milyonlarca Şarkıyı Türlerine Ayır</h2>
-                        <p class="text-spotify-subdued text-xs sm:text-sm mb-8 leading-relaxed">
-                            Spotify hesabına bağlan, çalma listelerindeki şarkıların türlerini otomatik analiz et ve tek tıkla yeni listelere dönüştür.
-                        </p>
-
-                        <!-- Config alert if credentials missing -->
-                        <div id="auth-credentials-needed" class="hidden text-left bg-black/50 border border-yellow-500/30 rounded-xl p-4 mb-6">
-                            <div class="flex items-start gap-3">
-                                <i data-lucide="alert-triangle" class="w-5 h-5 text-yellow-400 shrink-0 mt-0.5"></i>
-                                <div>
-                                    <h4 class="text-xs font-bold text-yellow-300 uppercase tracking-wider">Spotify API Ayarı Gerekli</h4>
-                                    <p class="text-xs text-spotify-subdued mt-1">
-                                        Giriş yapabilmek için Spotify Client ID ve Secret değerlerinizi ayarlamalısınız.
-                                    </p>
-                                    <button onclick="app.openSettingsModal()" class="mt-2.5 px-3 py-1.5 rounded-full bg-yellow-500/20 text-yellow-300 border border-yellow-500/40 text-xs font-bold hover:bg-yellow-500/30 transition">
-                                        Ayarları Şimdi Gir
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div id="auth-ready" class="flex flex-col items-center gap-3">
-                            <button onclick="app.loginWithSpotify()" class="w-full py-3.5 rounded-full bg-spotify-green hover:bg-spotify-greenHover hover:scale-[1.02] active:scale-98 text-black font-extrabold text-sm tracking-wide shadow-lg transition flex items-center justify-center gap-2">
-                                Spotify ile Giriş Yap
-                            </button>
-                            <span class="text-[11px] text-spotify-muted">Güvenli Spotify OAuth 2.0 Doğrulaması</span>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- 2. PLAYLISTS GRID VIEW -->
-                <section id="view-playlists" class="hidden">
-                    <div class="flex items-center justify-between mb-6">
-                        <div>
-                            <h2 class="text-2xl sm:text-3xl font-black tracking-tight text-white">Çalma Listelerin</h2>
-                            <p class="text-xs sm:text-sm text-spotify-subdued mt-0.5">Türlerine göre ayırmak istediğin bir çalma listesi seç.</p>
-                        </div>
-                    </div>
-
-                    <!-- Loading State -->
-                    <div id="playlists-loading" class="flex flex-col items-center justify-center py-24 text-spotify-subdued">
-                        <i data-lucide="loader-2" class="w-8 h-8 animate-spin text-spotify-green mb-3"></i>
-                        <p class="text-xs font-medium tracking-wide">Çalma listelerin Spotify'dan getiriliyor...</p>
-                    </div>
-
-                    <!-- Playlists Grid -->
-                    <div id="playlists-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
-                        <!-- Rendered dynamically by app.js -->
-                    </div>
-
-                    <!-- Empty state -->
-                    <div id="playlists-empty" class="hidden text-center py-20 bg-spotify-surface rounded-xl p-8 border border-white/5">
-                        <i data-lucide="music" class="w-12 h-12 text-spotify-muted mx-auto mb-3"></i>
-                        <h3 class="text-base font-bold text-white">Çalma Listesi Bulunamadı</h3>
-                        <p class="text-xs text-spotify-subdued mt-1">Aramana uygun bir liste yok veya henüz bir playlist oluşturmadın.</p>
-                    </div>
-                </section>
-
-                <!-- 3. PLAYLIST ANALYSIS VIEW (AUTHENTIC SPOTIFY HERO & TABLE) -->
-                <section id="view-analysis" class="hidden">
-                    
-                    <!-- Back link & Quick actions header -->
-                    <div class="flex items-center justify-between gap-4 mb-4">
-                        <button onclick="app.backToPlaylists()" class="inline-flex items-center gap-1.5 text-xs font-bold text-spotify-subdued hover:text-white transition">
-                            <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                            Tüm Çalma Listelerine Dön
-                        </button>
-                    </div>
-
-                    <!-- Spotify Signature Hero Section -->
-                    <div class="-mx-4 sm:-mx-8 -mt-4 px-6 sm:px-8 pt-6 pb-8 mb-6 bg-gradient-to-b from-[#324b3c] via-[#1a251e] to-spotify-base flex flex-col sm:flex-row items-center sm:items-end gap-6 border-b border-white/5">
-                        <img id="active-playlist-img" src="" alt="Cover" class="w-44 h-44 sm:w-52 sm:h-52 rounded shadow-[0_8px_40px_rgba(0,0,0,0.6)] object-cover bg-spotify-surface shrink-0">
-
-                        <div class="flex-1 text-center sm:text-left overflow-hidden">
-                            <div class="text-[11px] font-extrabold uppercase tracking-widest text-white mb-1">
-                                Çalma Listesi
-                            </div>
-                            <h1 id="active-playlist-title" class="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white my-2 line-clamp-2 leading-none">
-                                Playlist Adı
-                            </h1>
-                            <p id="active-playlist-desc" class="text-xs sm:text-sm text-spotify-subdued line-clamp-2 mb-3">
-                                Açıklama
-                            </p>
-
-                            <!-- Meta line -->
-                            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-1.5 text-xs text-white">
-                                <span class="font-bold hover:underline cursor-pointer" id="active-playlist-owner">Spotify Kullanıcısı</span>
-                                <span class="text-spotify-muted">•</span>
-                                <span id="active-playlist-total" class="font-medium text-spotify-subdued">0 şarkı</span>
-                                <span class="text-spotify-muted">•</span>
-                                <a id="active-playlist-spotify-link" href="#" target="_blank" class="inline-flex items-center gap-1 text-spotify-green hover:underline font-semibold ml-1">
-                                    Spotify'da Aç <i data-lucide="external-link" class="w-3 h-3"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Spotify Action Bar -->
-                    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
-                        <div class="flex items-center gap-4">
-                            <!-- Big Green Play / Split All Button -->
-                            <button onclick="app.openSplitAllModal()" class="w-14 h-14 rounded-full bg-spotify-green hover:bg-spotify-greenHover hover:scale-105 active:scale-95 text-black flex items-center justify-center shadow-xl shadow-spotify-green/20 transition shrink-0" title="Tüm Türleri Otomatik Böl">
-                                <svg class="w-6 h-6 ml-0.5 fill-black" viewBox="0 0 24 24">
-                                    <path d="m7.05 3.606 13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/>
-                                </svg>
-                            </button>
-
-                            <button onclick="app.openSplitAllModal()" class="px-5 py-2.5 rounded-full bg-spotify-green hover:bg-spotify-greenHover hover:scale-105 active:scale-95 text-black font-extrabold text-xs sm:text-sm transition flex items-center gap-2 shadow-md">
-                                <i data-lucide="zap" class="w-4 h-4 fill-black"></i>
-                                Tüm Türleri Ayrı Listelere Böl
-                            </button>
-
-                            <button onclick="app.openCreateCustomModal()" class="px-4 py-2.5 rounded-full border border-spotify-muted hover:border-white text-white font-bold text-xs sm:text-sm transition hover:scale-105 flex items-center gap-2">
-                                <i data-lucide="plus" class="w-4 h-4 text-spotify-green"></i>
-                                Seçilenlerden Yeni Liste (<span id="selected-tracks-count">0</span>)
-                            </button>
-                        </div>
-
-                        <!-- Search within playlist tracks -->
-                        <div class="relative w-full sm:w-64">
-                            <i data-lucide="search" class="w-3.5 h-3.5 text-spotify-subdued absolute left-3 top-1/2 -translate-y-1/2"></i>
-                            <input id="track-search" type="text" placeholder="Bu listede ara..." oninput="app.filterTracksByText(this.value)" class="w-full bg-spotify-highlight hover:bg-spotify-cardHover focus:bg-spotify-highlight border border-transparent focus:border-white/20 rounded-full pl-9 pr-3 py-1.5 text-xs text-white placeholder-spotify-muted focus:outline-none transition">
-                        </div>
-                    </div>
-
-                    <!-- Telemetry Cards & Distribution Bar -->
-                    <div class="bg-spotify-surface p-5 rounded-lg border border-white/5 mb-6">
-                        <div class="flex items-center justify-between text-xs font-bold mb-2">
-                            <span class="text-spotify-subdued uppercase tracking-wider">Müzik Türü Dağılımı</span>
-                            <span id="genre-distribution-label" class="text-spotify-green">Makro Türler</span>
-                        </div>
-                        <div id="genre-distribution-bar" class="w-full h-2 rounded-full bg-black/40 overflow-hidden flex shadow-inner mb-4">
-                            <!-- Filled dynamically -->
-                        </div>
-
-                        <!-- Stats 4-col -->
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-                            <div class="bg-black/30 p-3 rounded-md">
-                                <span class="text-spotify-muted block text-[11px]">Toplam Parça</span>
-                                <span id="stat-total-tracks" class="text-base font-extrabold text-white">0</span>
-                            </div>
-                            <div class="bg-black/30 p-3 rounded-md">
-                                <span class="text-spotify-muted block text-[11px]">Türü Tespit Edilen</span>
-                                <span id="stat-categorized-tracks" class="text-base font-extrabold text-spotify-green">0</span>
-                            </div>
-                            <div class="bg-black/30 p-3 rounded-md">
-                                <span class="text-spotify-muted block text-[11px]">Farklı Tür Sayısı</span>
-                                <span id="stat-genres-count" class="text-base font-extrabold text-white">0</span>
-                            </div>
-                            <div class="bg-black/30 p-3 rounded-md">
-                                <span class="text-spotify-muted block text-[11px]">Farklı Sanatçı</span>
-                                <span id="stat-artists-count" class="text-base font-extrabold text-white">0</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Genre Chips Filter Bar -->
-                    <div class="mb-6 flex flex-col gap-3">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-2">
-                                <span class="text-xs font-bold text-spotify-subdued uppercase tracking-wider">Tür Seçimi:</span>
-                                <div class="inline-flex p-0.5 bg-black/50 rounded-full border border-white/10 text-xs font-semibold">
-                                    <button id="btn-mode-macro" onclick="app.setGenreMode('macro')" class="px-3 py-1 rounded-full bg-white text-black font-bold transition">
-                                        Ana Türler
-                                    </button>
-                                    <button id="btn-mode-micro" onclick="app.setGenreMode('micro')" class="px-3 py-1 rounded-full text-spotify-subdued hover:text-white transition">
-                                        Detaylı Türler
-                                    </button>
-                                </div>
-                            </div>
-
-                            <button onclick="app.toggleSelectAllTracks()" id="btn-select-all" class="text-xs text-spotify-green hover:underline font-bold">
-                                Tümünü Seç / Kaldır
-                            </button>
-                        </div>
-
-                        <!-- Genre Chips Container -->
-                        <div id="genre-chips-container" class="flex flex-wrap gap-2 max-h-36 overflow-y-auto pr-1">
-                            <!-- Populated dynamically -->
-                        </div>
-                    </div>
-
-                    <!-- Spotify Track Table -->
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs select-none">
-                            <thead class="border-b border-[#2e2e2e] text-spotify-subdued font-bold uppercase text-[11px] tracking-wider">
-                                <tr class="h-9">
-                                    <th class="w-10 text-center pl-2">
-                                        <input type="checkbox" id="master-track-checkbox" onchange="app.handleMasterCheckbox(this)" class="w-4 h-4 rounded accent-spotify-green cursor-pointer">
-                                    </th>
-                                    <th class="w-10 text-center font-normal">#</th>
-                                    <th class="py-2">Başlık</th>
-                                    <th class="py-2 hidden md:table-cell">Albüm</th>
-                                    <th class="py-2">Türler</th>
-                                    <th class="py-2 text-right pr-4 font-normal">
-                                        <i data-lucide="clock" class="w-3.5 h-3.5 inline"></i>
-                                    </th>
-                                    <th class="w-10 text-center pr-2"></th>
-                                </tr>
-                            </thead>
-                            <tbody id="tracks-table-body" class="divide-y divide-transparent">
-                                <!-- Populated dynamically by app.js -->
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
-
-                <!-- Loading Modal -->
-                <div id="analysis-loading-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center">
-                    <div class="w-16 h-16 rounded-full bg-spotify-green/20 border border-spotify-green/40 flex items-center justify-center text-spotify-green mb-4">
-                        <i data-lucide="loader" class="w-8 h-8 animate-spin"></i>
-                    </div>
-                    <h3 class="text-xl font-black text-white mb-1">Çalma Listesi Taranıyor</h3>
-                    <p id="analysis-loading-msg" class="text-spotify-subdued text-xs max-w-sm leading-relaxed">
-                        Şarkılar ve sanatçı tür bilgileri taranıyor... Lütfen bekleyin.
-                    </p>
-                    <button onclick="app.cancelAnalysis()" class="mt-5 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-xs font-bold text-white transition">
-                        İptal Et
-                    </button>
-                </div>
-
+            <div id="playlists-loading" class="flex flex-col items-center justify-center py-20 text-spotify-subdued">
+                <i data-lucide="loader-2" class="w-10 h-10 animate-spin text-spotify-green mb-3"></i>
+                <p class="text-sm font-medium">Çalma listeleriniz yükleniyor...</p>
             </div>
-        </main>
-    </div>
 
-    <!-- DOCKED SPOTIFY BOTTOM PLAYER BAR -->
-    <footer id="audio-preview-bar" class="hidden h-20 sm:h-22 bg-black border-t border-spotify-border px-4 sm:px-6 flex items-center justify-between z-40 select-none">
+            
+            <div id="playlists-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                
+            </div>
+
+            
+            <div id="playlists-empty" class="hidden text-center py-20 glass-panel rounded-3xl">
+                <i data-lucide="music" class="w-12 h-12 text-spotify-subdued mx-auto mb-3"></i>
+                <h3 class="text-lg font-bold">Çalma Listesi Bulunamadı</h3>
+                <p class="text-sm text-spotify-subdued mt-1">Aramanıza uygun bir çalma listesi bulunamadı veya hesabınızda henüz liste yok.</p>
+            </div>
+        </section>
+
         
-        <!-- Left: Now Playing Metadata -->
-        <div class="flex items-center gap-3.5 w-1/4 min-w-[180px] overflow-hidden">
-            <img id="audio-preview-img" src="" alt="Track Art" class="w-14 h-14 rounded object-cover shadow-md bg-spotify-surface shrink-0">
-            <div class="overflow-hidden">
-                <div id="audio-preview-title" class="text-xs sm:text-sm font-bold text-white truncate hover:underline cursor-pointer">Şarkı Adı</div>
-                <div id="audio-preview-artist" class="text-[11px] text-spotify-subdued truncate hover:underline hover:text-white cursor-pointer">Sanatçı</div>
+        <section id="view-analysis" class="hidden">
+            
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                <button onclick="app.backToPlaylists()" class="inline-flex items-center gap-2 text-sm text-spotify-subdued hover:text-white transition font-medium">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                    Tüm Playlistlere Dön
+                </button>
+
+                
+                <div class="flex flex-wrap items-center gap-2.5">
+                    <button onclick="app.openSplitAllModal()" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-spotify-green hover:bg-spotify-greenHover text-black text-xs sm:text-sm font-bold shadow-md shadow-spotify-green/20 hover:scale-[1.02] active:scale-95 transition">
+                        <i data-lucide="zap" class="w-4 h-4"></i>
+                        Tüm Türleri Tek Tıkla Ayrı Listelere Böl
+                    </button>
+
+                    <button onclick="app.openCreateCustomModal()" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-spotify-gray hover:bg-spotify-grayLight border border-white/10 text-white text-xs sm:text-sm font-semibold transition">
+                        <i data-lucide="plus" class="w-4 h-4 text-spotify-green"></i>
+                        Seçilen Şarkılardan Yeni Liste Yap (<span id="selected-tracks-count">0</span>)
+                    </button>
+                </div>
             </div>
-            <button class="text-spotify-subdued hover:text-spotify-green transition ml-1" title="Favorilere Ekle">
-                <i data-lucide="heart" class="w-4 h-4"></i>
+
+            
+            <div class="glass-panel p-6 rounded-3xl mb-6 relative overflow-hidden">
+                <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6 relative z-10">
+                    <img id="active-playlist-img" src="" alt="Cover" class="w-36 h-36 sm:w-44 sm:h-44 rounded-2xl shadow-2xl object-cover bg-white/5 border border-white/10 shrink-0">
+
+                    <div class="flex-1 text-center sm:text-left">
+                        <div class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-spotify-green mb-1">
+                            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                            Analiz Edilen Playlist
+                        </div>
+                        <h2 id="active-playlist-title" class="text-2xl sm:text-3xl font-black tracking-tight text-white line-clamp-1 mb-2">Playlist Başlığı</h2>
+                        <p id="active-playlist-desc" class="text-xs sm:text-sm text-spotify-subdued line-clamp-2 mb-4">Açıklama</p>
+
+                        <div class="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-xs font-medium text-spotify-subdued">
+                            <span class="flex items-center gap-1.5"><i data-lucide="user" class="w-3.5 h-3.5"></i> Sahibi: <strong id="active-playlist-owner" class="text-white">...</strong></span>
+                            <span class="flex items-center gap-1.5"><i data-lucide="music" class="w-3.5 h-3.5"></i> Toplam: <strong id="active-playlist-total" class="text-white">0</strong> şarkı</span>
+                            <a id="active-playlist-spotify-link" href="#" target="_blank" class="flex items-center gap-1 text-spotify-green hover:underline">
+                                Spotify'da Aç <i data-lucide="external-link" class="w-3 h-3"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                
+                <div class="mt-6 pt-6 border-t border-white/10">
+                    <div class="flex items-center justify-between text-xs font-semibold mb-2">
+                        <span class="text-spotify-subdued">Tür Dağılım Grafiği</span>
+                        <span id="genre-distribution-label" class="text-spotify-green">Makro Türler</span>
+                    </div>
+                    <div id="genre-distribution-bar" class="w-full h-3 rounded-full bg-white/10 overflow-hidden flex shadow-inner">
+                        
+                    </div>
+                </div>
+            </div>
+
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3.5 mb-6">
+                <div class="glass-card p-4 rounded-2xl">
+                    <div class="flex items-center justify-between text-spotify-subdued mb-1">
+                        <span class="text-xs font-semibold">Toplam Şarkı</span>
+                        <i data-lucide="disc" class="w-4 h-4 text-blue-400"></i>
+                    </div>
+                    <div id="stat-total-tracks" class="text-xl sm:text-2xl font-black">0</div>
+                </div>
+
+                <div class="glass-card p-4 rounded-2xl">
+                    <div class="flex items-center justify-between text-spotify-subdued mb-1">
+                        <span class="text-xs font-semibold">Türü Belirlenen</span>
+                        <i data-lucide="check-circle-2" class="w-4 h-4 text-spotify-green"></i>
+                    </div>
+                    <div id="stat-categorized-tracks" class="text-xl sm:text-2xl font-black">0</div>
+                </div>
+
+                <div class="glass-card p-4 rounded-2xl">
+                    <div class="flex items-center justify-between text-spotify-subdued mb-1">
+                        <span class="text-xs font-semibold">Farklı Tür Sayısı</span>
+                        <i data-lucide="layers" class="w-4 h-4 text-purple-400"></i>
+                    </div>
+                    <div id="stat-genres-count" class="text-xl sm:text-2xl font-black">0</div>
+                </div>
+
+                <div class="glass-card p-4 rounded-2xl">
+                    <div class="flex items-center justify-between text-spotify-subdued mb-1">
+                        <span class="text-xs font-semibold">Farklı Sanatçı</span>
+                        <i data-lucide="users" class="w-4 h-4 text-amber-400"></i>
+                    </div>
+                    <div id="stat-artists-count" class="text-xl sm:text-2xl font-black">0</div>
+                </div>
+            </div>
+
+            
+            <div class="glass-panel p-5 rounded-3xl mb-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold text-spotify-subdued uppercase tracking-wider">Tür Görünümü:</span>
+                        <div class="inline-flex p-1 bg-black/40 rounded-xl border border-white/10 text-xs font-semibold">
+                            <button id="btn-mode-macro" onclick="app.setGenreMode('macro')" class="px-3 py-1.5 rounded-lg bg-spotify-green text-black transition font-bold">
+                                Ana Türler (Makro)
+                            </button>
+                            <button id="btn-mode-micro" onclick="app.setGenreMode('micro')" class="px-3 py-1.5 rounded-lg text-spotify-subdued hover:text-white transition">
+                                Detaylı Türler (Mikro)
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="text-xs text-spotify-subdued flex items-center gap-2">
+                        <span>Filtrelemek için tür etiketlerine tıklayın</span>
+                    </div>
+                </div>
+
+                
+                <div id="genre-chips-container" class="flex flex-wrap gap-2 max-h-48 overflow-y-auto pr-1">
+                    
+                </div>
+            </div>
+
+            
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                <div class="flex items-center gap-3">
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                        Şarkı Listesi
+                        <span id="filtered-tracks-count" class="text-xs font-semibold px-2 py-0.5 rounded-full bg-white/10 text-spotify-subdued">0 şarkı</span>
+                    </h3>
+
+                    <button onclick="app.toggleSelectAllTracks()" id="btn-select-all" class="text-xs text-spotify-green hover:underline font-semibold">
+                        Tümünü Seç / Kaldır
+                    </button>
+                </div>
+
+                
+                <div class="relative w-full sm:w-64">
+                    <i data-lucide="search" class="w-3.5 h-3.5 text-spotify-subdued absolute left-3 top-1/2 -translate-y-1/2"></i>
+                    <input id="track-search" type="text" placeholder="Şarkı veya sanatçı ara..." oninput="app.filterTracksByText(this.value)" class="w-full bg-spotify-gray/80 border border-white/10 rounded-full pl-8 pr-3 py-1.5 text-xs text-white placeholder-spotify-subdued focus:outline-none focus:border-spotify-green transition">
+                </div>
+            </div>
+
+            
+            <div class="glass-panel rounded-2xl overflow-hidden border border-white/10">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-black/40 border-b border-white/10 text-spotify-subdued font-semibold uppercase tracking-wider">
+                            <tr>
+                                <th class="p-3 w-10 text-center">
+                                    <input type="checkbox" id="master-track-checkbox" onchange="app.handleMasterCheckbox(this)" class="w-4 h-4 rounded accent-spotify-green cursor-pointer">
+                                </th>
+                                <th class="p-3 w-12 text-center">#</th>
+                                <th class="p-3">Başlık & Sanatçı</th>
+                                <th class="p-3 hidden md:table-cell">Albüm</th>
+                                <th class="p-3">Türler</th>
+                                <th class="p-3 text-right">Süre</th>
+                                <th class="p-3 w-12 text-center">İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tracks-table-body" class="divide-y divide-white/5">
+                            
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        
+        <div id="analysis-loading-modal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center">
+            <div class="w-20 h-20 rounded-full bg-spotify-green/10 border border-spotify-green/30 flex items-center justify-center text-spotify-green mb-6">
+                <i data-lucide="loader" class="w-10 h-10 animate-spin"></i>
+            </div>
+            <h3 class="text-2xl font-black text-white mb-2">Çalma Listesi Analiz Ediliyor</h3>
+            <p id="analysis-loading-msg" class="text-spotify-subdued text-sm max-w-md">
+                Şarkılar ve sanatçı tür bilgileri Spotify üzerinden getiriliyor... Lütfen bekleyin.
+            </p>
+            <button onclick="app.cancelAnalysis()" class="mt-6 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold text-spotify-subdued hover:text-white transition flex items-center gap-1.5">
+                <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                Analizi İptal Et
             </button>
         </div>
 
-        <!-- Center: Controls & Scrubber -->
-        <div class="flex flex-col items-center justify-center gap-1.5 w-2/4 max-w-xl">
-            <!-- Buttons row -->
-            <div class="flex items-center gap-4 sm:gap-6">
-                <button class="text-spotify-subdued hover:text-white transition" title="Karışık">
-                    <i data-lucide="shuffle" class="w-4 h-4"></i>
-                </button>
-                <button class="text-spotify-subdued hover:text-white transition" title="Önceki">
-                    <i data-lucide="skip-back" class="w-4 h-4 fill-current"></i>
-                </button>
+    </main>
 
-                <!-- Play/Pause Button -->
-                <button onclick="app.togglePreviewAudio()" class="w-8 h-8 rounded-full bg-white hover:scale-105 active:scale-95 text-black flex items-center justify-center transition shadow-md">
-                    <i id="audio-play-icon" data-lucide="pause" class="w-4 h-4 fill-black"></i>
-                </button>
-
-                <button class="text-spotify-subdued hover:text-white transition" title="Sonraki">
-                    <i data-lucide="skip-forward" class="w-4 h-4 fill-current"></i>
-                </button>
-                <button class="text-spotify-subdued hover:text-white transition" title="Tekrar">
-                    <i data-lucide="repeat" class="w-4 h-4"></i>
-                </button>
-            </div>
-
-            <!-- Scrubber progress line -->
-            <div class="w-full flex items-center gap-2 text-[10px] text-spotify-subdued font-mono">
-                <span id="audio-time-current">0:00</span>
-                <div class="flex-1 h-1 bg-[#4d4d4d] hover:h-1.5 rounded-full overflow-hidden cursor-pointer relative group" onclick="app.seekAudio(event)">
-                    <div id="audio-progress-fill" class="h-full bg-white group-hover:bg-spotify-green w-0 rounded-full transition-all duration-100"></div>
-                </div>
-                <span id="audio-time-total">0:30</span>
+    
+    <div id="audio-preview-bar" class="hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-40 max-w-xl w-[92%] glass-panel rounded-full p-2.5 px-4 shadow-2xl border border-spotify-green/30 flex items-center justify-between gap-4">
+        <div class="flex items-center gap-3 overflow-hidden">
+            <img id="audio-preview-img" src="" alt="Track Art" class="w-10 h-10 rounded-full object-cover shrink-0">
+            <div class="overflow-hidden">
+                <div id="audio-preview-title" class="text-xs font-bold text-white truncate">Şarkı Adı</div>
+                <div id="audio-preview-artist" class="text-[11px] text-spotify-subdued truncate">Sanatçı</div>
             </div>
         </div>
 
-        <!-- Right: Volume & Options -->
-        <div class="flex items-center justify-end gap-3 w-1/4 min-w-[140px]">
-            <i data-lucide="volume-2" class="w-4 h-4 text-spotify-subdued"></i>
-            <input type="range" min="0" max="1" step="0.05" value="0.8" oninput="app.setVolume(this.value)" class="spotify-slider w-20 hidden sm:block">
+        <div class="flex items-center gap-3 shrink-0">
             
-            <button onclick="app.stopPreviewAudio()" class="p-1.5 rounded-full hover:bg-white/10 text-spotify-subdued hover:text-white transition ml-2" title="Kapat">
+            <div class="flex items-end gap-1 h-4">
+                <span class="eq-bar"></span>
+                <span class="eq-bar"></span>
+                <span class="eq-bar"></span>
+            </div>
+
+            
+            <button onclick="app.togglePreviewAudio()" class="w-9 h-9 rounded-full bg-spotify-green hover:bg-spotify-greenHover text-black flex items-center justify-center font-bold transition">
+                <i id="audio-play-icon" data-lucide="pause" class="w-4 h-4"></i>
+            </button>
+
+            
+            <button onclick="app.stopPreviewAudio()" class="p-2 rounded-full hover:bg-white/10 text-spotify-subdued hover:text-white transition">
                 <i data-lucide="x" class="w-4 h-4"></i>
             </button>
         </div>
-
         <audio id="global-audio-player" class="hidden"></audio>
-    </footer>
+    </div>
 
-    <!-- SETTINGS MODAL -->
+    
     <div id="modal-settings" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-spotify-surface w-full max-w-lg rounded-xl p-6 sm:p-7 shadow-2xl relative border border-spotify-border">
+        <div class="glass-panel w-full max-w-lg rounded-3xl p-6 sm:p-8 shadow-2xl relative border border-white/10 animate-in fade-in">
             <button onclick="app.closeSettingsModal()" class="absolute top-5 right-5 text-spotify-subdued hover:text-white">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
 
             <div class="flex items-center gap-3 mb-4">
-                <div class="w-10 h-10 rounded-full bg-spotify-green flex items-center justify-center text-black">
+                <div class="w-10 h-10 rounded-2xl bg-spotify-green/20 text-spotify-green flex items-center justify-center">
                     <i data-lucide="settings" class="w-5 h-5"></i>
                 </div>
                 <div>
-                    <h3 class="text-base font-bold text-white">Spotify API Ayarları</h3>
-                    <p class="text-xs text-spotify-subdued">Gerekli Spotify Developer Dashboard bilgileri</p>
+                    <h3 class="text-lg font-bold text-white">Spotify API Ayarları</h3>
+                    <p class="text-xs text-spotify-subdued">Uygulamanın çalışması için gerekli Developer anahtarları</p>
                 </div>
             </div>
 
             <div class="space-y-4 text-xs">
-                <div class="bg-black/40 p-3.5 rounded-lg border border-white/5 space-y-2.5">
-                    <div class="font-bold text-white flex items-center gap-1.5">
+                
+                <div class="bg-black/50 p-4 rounded-2xl border border-white/5 space-y-3">
+                    <div class="font-bold text-white flex items-center gap-1.5 text-sm">
                         <i data-lucide="info" class="w-4 h-4 text-spotify-green"></i>
                         Spotify Developer Dashboard Kurulumu
                     </div>
-                    <ol class="list-decimal list-inside space-y-1 text-spotify-subdued leading-relaxed">
+                    <ol class="list-decimal list-inside space-y-1.5 text-spotify-subdued leading-relaxed">
                         <li><a href="https://developer.spotify.com/dashboard" target="_blank" class="text-spotify-green underline font-semibold">Spotify Developer Dashboard</a>'a gidin.</li>
-                        <li>Oluşturduğunuz uygulamanın <strong>Settings</strong> sekmesine girin.</li>
-                        <li><strong>Redirect URIs</strong> alanına aşağıdaki adresi ekleyip <strong>Save</strong>'e basın:</li>
+                        <li>Oluşturduğunuz uygulamanıza tıklayın ve sağ üstteki <strong>"Settings"</strong> butonuna basın.</li>
+                        <li><strong>Client ID</strong> değerinin aşağıdakiyle aynı uygulamaya ait olduğundan emin olun.</li>
+                        <li><strong>"Redirect URIs"</strong> alanına aşağıdaki adresi yapıştırıp <strong>"Add"</strong> butonuna tıklayın:</li>
                     </ol>
 
-                    <div class="flex items-center justify-between bg-spotify-highlight p-2 rounded-md border border-white/5">
-                        <code id="settings-redirect-uri" class="text-spotify-green font-mono text-xs select-all">http://localhost:8888/callback</code>
-                        <button onclick="app.copyText(document.getElementById('settings-redirect-uri').innerText)" class="px-2 py-1 rounded bg-white/5 hover:bg-spotify-green hover:text-black text-spotify-subdued transition font-bold text-[10px]">
-                            Kopyala
-                        </button>
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between bg-spotify-gray p-2.5 rounded-xl border border-white/5">
+                            <div>
+                                <div class="text-[10px] text-spotify-subdued uppercase font-bold tracking-wider">Varsayılan Redirect URI</div>
+                                <code id="settings-redirect-uri" class="text-spotify-green font-mono text-xs select-all">http://localhost:8888/callback</code>
+                            </div>
+                            <button onclick="app.copyText('http://localhost:8888/callback')" class="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-spotify-green hover:text-black text-spotify-subdued transition flex items-center gap-1 font-semibold text-[11px]" title="Kopyala">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i> Kopyala
+                            </button>
+                        </div>
+
+                        <div class="flex items-center justify-between bg-spotify-gray p-2.5 rounded-xl border border-white/5">
+                            <div>
+                                <div class="text-[10px] text-spotify-subdued uppercase font-bold tracking-wider">Alternatif (IP) Redirect URI</div>
+                                <code class="text-spotify-subdued font-mono text-xs select-all">http://127.0.0.1:8888/callback</code>
+                            </div>
+                            <button onclick="app.copyText('http://127.0.0.1:8888/callback')" class="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-spotify-green hover:text-black text-spotify-subdued transition flex items-center gap-1 font-semibold text-[11px]" title="Kopyala">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i> Kopyala
+                            </button>
+                        </div>
+                    </div>
+
+                    
+                    <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-[11px] leading-relaxed flex items-start gap-2.5">
+                        <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400 shrink-0 mt-0.5"></i>
+                        <div>
+                            <strong>Çok Önemli (Hatanın Ana Sebebi):</strong><br>
+                            Spotify Dashboard'da adresi ekleyip <strong>"Add"</strong> butonuna bastıktan sonra sayfanın en altına kaydırıp yeşil <strong>"Save"</strong> butonuna tıklamanız gerekir! <em>Save</em>'e tıklanmazsa Spotify adresi kaydetmez ve bu hatayı verir.
+                        </div>
                     </div>
                 </div>
 
                 <div>
-                    <label class="block font-bold mb-1 text-spotify-subdued uppercase text-[10px] tracking-wider">Client ID</label>
-                    <input id="cfg-client-id" type="text" placeholder="Spotify Client ID" class="w-full bg-spotify-highlight border border-transparent focus:border-white/30 rounded-md px-3 py-2 text-white font-mono text-xs focus:outline-none">
+                    <label class="block font-semibold mb-1 text-spotify-subdued">Client ID</label>
+                    <input id="cfg-client-id" type="text" placeholder="Spotify Client ID" class="w-full bg-spotify-gray border border-white/10 rounded-xl px-3 py-2 text-white font-mono placeholder:text-gray-600 focus:outline-none focus:border-spotify-green">
                 </div>
 
                 <div>
-                    <label class="block font-bold mb-1 text-spotify-subdued uppercase text-[10px] tracking-wider">Client Secret</label>
-                    <input id="cfg-client-secret" type="password" placeholder="Spotify Client Secret" class="w-full bg-spotify-highlight border border-transparent focus:border-white/30 rounded-md px-3 py-2 text-white font-mono text-xs focus:outline-none">
+                    <label class="block font-semibold mb-1 text-spotify-subdued">Client Secret</label>
+                    <input id="cfg-client-secret" type="password" placeholder="Spotify Client Secret" class="w-full bg-spotify-gray border border-white/10 rounded-xl px-3 py-2 text-white font-mono placeholder:text-gray-600 focus:outline-none focus:border-spotify-green">
                 </div>
 
                 <div>
-                    <label class="block font-bold mb-1 text-spotify-subdued uppercase text-[10px] tracking-wider">Redirect URI</label>
-                    <input id="cfg-redirect-uri" type="text" value="http://localhost:8888/callback" class="w-full bg-spotify-highlight border border-transparent focus:border-white/30 rounded-md px-3 py-2 text-white font-mono text-xs focus:outline-none">
+                    <label class="block font-semibold mb-1 text-spotify-subdued">Uygulamanın Kullandığı Redirect URI</label>
+                    <input id="cfg-redirect-uri" type="text" value="http://localhost:8888/callback" class="w-full bg-spotify-gray border border-white/10 rounded-xl px-3 py-2 text-white font-mono placeholder:text-gray-600 focus:outline-none focus:border-spotify-green">
                 </div>
             </div>
 
             <div class="mt-6 flex items-center justify-end gap-3">
-                <button onclick="app.closeSettingsModal()" class="px-4 py-2 rounded-full text-xs font-bold text-spotify-subdued hover:text-white transition">
+                <button onclick="app.closeSettingsModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-spotify-subdued hover:text-white transition">
                     İptal
                 </button>
-                <button onclick="app.saveSettings()" class="px-5 py-2.5 rounded-full bg-spotify-green hover:bg-spotify-greenHover text-black text-xs font-extrabold transition">
-                    Kaydet
+                <button onclick="app.saveSettings()" class="px-5 py-2 rounded-xl bg-spotify-green hover:bg-spotify-greenHover text-black text-xs font-bold transition">
+                    Kaydet ve Yenile
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- CREATE CUSTOM PLAYLIST MODAL -->
+    
     <div id="modal-create-custom" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-spotify-surface w-full max-w-md rounded-xl p-6 sm:p-7 shadow-2xl relative border border-spotify-border">
+        <div class="glass-panel w-full max-w-md rounded-3xl p-6 sm:p-8 shadow-2xl relative border border-white/10">
             <button onclick="app.closeCreateCustomModal()" class="absolute top-5 right-5 text-spotify-subdued hover:text-white">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
 
-            <h3 class="text-base font-bold text-white mb-1">Yeni Çalma Listesi Oluştur</h3>
-            <p class="text-xs text-spotify-subdued mb-4">Seçilen parçaları hesabına yeni bir çalma listesi olarak kaydet.</p>
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-2xl bg-spotify-green/20 text-spotify-green flex items-center justify-center">
+                    <i data-lucide="folder-plus" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-white">Yeni Playlist Oluştur</h3>
+                    <p class="text-xs text-spotify-subdued">Seçilen şarkıları Spotify hesabınıza liste olarak ekleyin</p>
+                </div>
+            </div>
 
             <div class="space-y-4 text-xs">
                 <div>
-                    <label class="block font-bold mb-1 text-spotify-subdued uppercase text-[10px] tracking-wider">Başlık</label>
-                    <input id="custom-pl-name" type="text" placeholder="Örn: En İyi Rock Parçaları" class="w-full bg-spotify-highlight border border-transparent focus:border-white/30 rounded-md px-3 py-2 text-white font-medium text-xs focus:outline-none">
+                    <label class="block font-semibold mb-1 text-spotify-subdued">Playlist Başlığı</label>
+                    <input id="custom-pl-name" type="text" placeholder="Örn: Favori Rock Parçalarım" class="w-full bg-spotify-gray border border-white/10 rounded-xl px-3 py-2.5 text-white placeholder:text-gray-600 focus:outline-none focus:border-spotify-green text-sm font-medium">
                 </div>
 
                 <div>
-                    <label class="block font-bold mb-1 text-spotify-subdued uppercase text-[10px] tracking-wider">Açıklama (İsteğe Bağlı)</label>
-                    <textarea id="custom-pl-desc" rows="2" placeholder="Playlist açıklaması..." class="w-full bg-spotify-highlight border border-transparent focus:border-white/30 rounded-md px-3 py-2 text-white text-xs focus:outline-none"></textarea>
+                    <label class="block font-semibold mb-1 text-spotify-subdued">Açıklama (İsteğe Bağlı)</label>
+                    <textarea id="custom-pl-desc" rows="2" placeholder="Playlist açıklaması..." class="w-full bg-spotify-gray border border-white/10 rounded-xl px-3 py-2 text-white placeholder:text-gray-600 focus:outline-none focus:border-spotify-green"></textarea>
                 </div>
 
-                <div class="flex items-center justify-between p-3 bg-black/30 rounded-md">
+                <div class="flex items-center justify-between p-3 bg-black/40 rounded-xl border border-white/5">
                     <div>
-                        <div class="font-bold text-white text-xs">Herkese Açık</div>
-                        <div class="text-[11px] text-spotify-subdued">Profilinde diğer kullanıcılar görsün mü?</div>
+                        <div class="font-semibold text-white">Herkese Açık Playlist</div>
+                        <div class="text-[11px] text-spotify-subdued">Profilinizde herkes tarafından görünsün mü?</div>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input id="custom-pl-public" type="checkbox" class="sr-only peer">
-                        <div class="w-9 h-5 bg-spotify-highlight peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-spotify-green"></div>
+                        <div class="w-9 h-5 bg-spotify-gray peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-spotify-green"></div>
                     </label>
                 </div>
 
-                <div class="text-xs text-spotify-subdued flex items-center justify-between pt-1">
-                    <span>Eklenecek Parça Sayısı:</span>
+                <div class="text-xs text-spotify-subdued flex items-center justify-between">
+                    <span>Eklenecek Şarkı Sayısı:</span>
                     <strong id="custom-modal-track-count" class="text-spotify-green font-bold text-sm">0</strong>
                 </div>
             </div>
 
             <div class="mt-6 flex items-center justify-end gap-3">
-                <button onclick="app.closeCreateCustomModal()" class="px-4 py-2 rounded-full text-xs font-bold text-spotify-subdued hover:text-white transition">
+                <button onclick="app.closeCreateCustomModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-spotify-subdued hover:text-white transition">
                     Vazgeç
                 </button>
-                <button id="btn-submit-create-custom" onclick="app.submitCreateCustomPlaylist()" class="px-5 py-2.5 rounded-full bg-spotify-green hover:bg-spotify-greenHover text-black text-xs font-extrabold transition">
+                <button id="btn-submit-create-custom" onclick="app.submitCreateCustomPlaylist()" class="px-5 py-2.5 rounded-xl bg-spotify-green hover:bg-spotify-greenHover text-black text-xs font-bold transition flex items-center gap-2">
+                    <i data-lucide="check" class="w-4 h-4"></i>
                     Listeyi Oluştur
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- SPLIT ALL GENRES MODAL -->
+    
     <div id="modal-split-all" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-spotify-surface w-full max-w-lg rounded-xl p-6 sm:p-7 shadow-2xl relative border border-spotify-border max-h-[85vh] flex flex-col">
+        <div class="glass-panel w-full max-w-xl rounded-3xl p-6 sm:p-8 shadow-2xl relative border border-white/10 max-h-[90vh] flex flex-col">
             <button onclick="app.closeSplitAllModal()" class="absolute top-5 right-5 text-spotify-subdued hover:text-white">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
 
-            <h3 class="text-base font-bold text-white mb-1">Tüm Türleri Ayrı Listelere Böl</h3>
-            <p class="text-xs text-spotify-subdued mb-4">Tespit edilen her tür için Spotify hesabına yeni bir liste eklenecektir.</p>
-
-            <div class="space-y-2 text-xs overflow-y-auto flex-1 pr-1">
-                <div id="split-all-genres-list" class="space-y-1.5">
-                    <!-- Populated dynamically -->
+            <div class="flex items-center gap-3 mb-4 shrink-0">
+                <div class="w-10 h-10 rounded-2xl bg-spotify-green/20 text-spotify-green flex items-center justify-center">
+                    <i data-lucide="zap" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-white">Tüm Türleri Ayrı Listelere Böl</h3>
+                    <p class="text-xs text-spotify-subdued">Seçilen her tür için otomatik olarak ayrı bir Spotify listesi oluşturulur</p>
                 </div>
             </div>
 
-            <div class="mt-5 pt-4 border-t border-[#2e2e2e] flex items-center justify-between shrink-0">
+            <div class="space-y-3 text-xs overflow-y-auto flex-1 pr-1">
+                <div class="p-3 bg-spotify-green/10 border border-spotify-green/20 rounded-2xl text-spotify-subdued">
+                    Aşağıdaki türler tespit edildi. Çalma listesi oluşturmak istediklerinizi işaretleyin.
+                </div>
+
+                <div id="split-all-genres-list" class="space-y-2">
+                    
+                </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-white/10 flex items-center justify-between shrink-0">
                 <div class="text-xs text-spotify-subdued">
                     Oluşturulacak Liste: <strong id="split-all-count-badge" class="text-spotify-green font-bold">0</strong>
                 </div>
 
-                <div class="flex items-center gap-2">
-                    <button onclick="app.closeSplitAllModal()" class="px-4 py-2 rounded-full text-xs font-bold text-spotify-subdued hover:text-white transition">
+                <div class="flex items-center gap-2.5">
+                    <button onclick="app.closeSplitAllModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-spotify-subdued hover:text-white transition">
                         İptal
                     </button>
-                    <button id="btn-submit-split-all" onclick="app.submitSplitAll()" class="px-5 py-2.5 rounded-full bg-spotify-green hover:bg-spotify-greenHover text-black text-xs font-extrabold transition">
+                    <button id="btn-submit-split-all" onclick="app.submitSplitAll()" class="px-5 py-2.5 rounded-xl bg-spotify-green hover:bg-spotify-greenHover text-black text-xs font-bold transition flex items-center gap-2">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i>
                         Listeleri Oluştur
                     </button>
                 </div>
@@ -590,29 +572,30 @@
         </div>
     </div>
 
-    <!-- SUCCESS MODAL -->
+    
     <div id="modal-success" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-spotify-surface w-full max-w-md rounded-xl p-6 sm:p-7 shadow-2xl relative border border-spotify-border text-center">
-            <div class="w-14 h-14 mx-auto rounded-full bg-spotify-green/20 text-spotify-green flex items-center justify-center mb-3">
-                <i data-lucide="check" class="w-7 h-7 stroke-[3]"></i>
+        <div class="glass-panel w-full max-w-lg rounded-3xl p-6 sm:p-8 shadow-2xl relative border border-white/10 max-h-[85vh] flex flex-col text-center">
+            <div class="w-16 h-16 mx-auto rounded-3xl bg-spotify-green/20 text-spotify-green flex items-center justify-center mb-4">
+                <i data-lucide="check-circle" class="w-8 h-8"></i>
             </div>
 
-            <h3 id="success-modal-title" class="text-lg font-bold text-white mb-1">Çalma Listeleri Oluşturuldu!</h3>
-            <p id="success-modal-subtitle" class="text-xs text-spotify-subdued mb-4">Listeler başarıyla Spotify kütüphanene eklendi.</p>
+            <h3 id="success-modal-title" class="text-xl font-bold text-white mb-1">Playlistler Başarıyla Oluşturuldu!</h3>
+            <p id="success-modal-subtitle" class="text-xs text-spotify-subdued mb-4">Yeni çalma listeleriniz doğrudan Spotify hesabınıza eklendi.</p>
 
-            <div id="success-modal-playlists" class="space-y-1.5 text-xs overflow-y-auto max-h-52 mb-5 text-left bg-black/30 p-2.5 rounded-md">
-                <!-- Links rendered dynamically -->
+            <div id="success-modal-playlists" class="space-y-2 text-xs overflow-y-auto flex-1 max-h-60 mb-6 text-left">
+                
             </div>
 
-            <button onclick="app.closeSuccessModal()" class="w-full py-2.5 rounded-full bg-spotify-green hover:bg-spotify-greenHover text-black text-xs font-extrabold transition">
-                Tamam
+            <button onclick="app.closeSuccessModal()" class="w-full py-3 rounded-2xl bg-spotify-green hover:bg-spotify-greenHover text-black text-xs font-bold transition">
+                Harika, Kapat
             </button>
         </div>
     </div>
 
-    <!-- Toast container -->
+    
     <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
+    
     <script src="/static/js/app.js"></script>
 </body>
 </html>

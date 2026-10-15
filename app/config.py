@@ -14,6 +14,7 @@ DEFAULT_REDIRECT_URI = "http://127.0.0.1:8888/callback"
 SPOTIFY_SCOPES = [
     "user-read-private",
     "user-read-email",
+    "user-library-read",
     "playlist-read-private",
     "playlist-read-collaborative",
     "playlist-modify-public",
