@@ -24,6 +24,7 @@ venv.bak/
 *.swo
 
 # Test & scratch caches
+.pytest_cache/
 data/test_artist_cache.json
 scratch/
 *.log

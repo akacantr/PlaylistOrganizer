@@ -341,6 +341,15 @@ def batch_get_artists_genres(artist_names_map: Dict[str, str]) -> Dict[str, Dict
 
     return result_map
 
+def deduplicate_track_uris(track_uris: List[str]) -> List[str]:
+    seen = set()
+    unique = []
+    for u in track_uris:
+        if u and isinstance(u, str) and u.startswith("spotify:track:") and u not in seen:
+            seen.add(u)
+            unique.append(u)
+    return unique
+
 def create_user_playlist(name: str, description: str, track_uris: List[str], is_public: bool = False) -> Optional[Dict[str, Any]]:
     sp = get_spotify_client()
     if not sp:
@@ -358,7 +367,7 @@ def create_user_playlist(name: str, description: str, track_uris: List[str], is_
         )
 
         playlist_id = new_playlist["id"]
-        unique_uris = [u for u in track_uris if u and u.startswith("spotify:track:")]
+        unique_uris = deduplicate_track_uris(track_uris)
 
         chunk_size = 100
         for i in range(0, len(unique_uris), chunk_size):

@@ -112,11 +112,11 @@ COMPILED_RULES = [
 ]
 
 INFERENCE_PATTERNS = [
-    ("Phonk / Drift & Bass", re.compile(r'\b(phonk|drift|montagem|automotivo|hardstyle|sped up|slowed|nightcore|zyzz|brazilian funk|funk|krush)\b', re.IGNORECASE)),
+    ("Phonk / Drift & Bass", re.compile(r'\b(phonk|drift|montagem|automotivo|hardstyle|sped up|slowed|nightcore|zyzz|brazilian funk|krush)\b', re.IGNORECASE)),
     ("Elektronik / Dance", re.compile(r'\b(remix|club mix|extended mix|vip mix|edm|techno|house|trance|dubstep|rave|synthwave|bass|slap house|radio edit)\b', re.IGNORECASE)),
     ("Türkçe Arabesk & Damar", re.compile(r'\b(arabesk|arabesque|damar|fantezi|taverna)\b', re.IGNORECASE)),
-    ("Türkçe Rap / Hip-Hop", re.compile(r'\b(türkçe rap|turkce rap|rap|trap|drill|diss|freestyle|cypher)\b', re.IGNORECASE)),
-    ("Hip-Hop & Rap", re.compile(r'\b(rap|hip hop|hip-hop|trap|drill|boom bap|beat)\b', re.IGNORECASE)),
+    ("Türkçe Rap / Hip-Hop", re.compile(r'\b(türkçe rap|turkce rap|türkçe trap|turkce trap|türkçe drill|turkce drill|türkçe hip hop|turkce hip hop|anatolian rap|anatolian hip hop)\b', re.IGNORECASE)),
+    ("Hip-Hop & Rap", re.compile(r'\b(rap|hip hop|hip-hop|trap|drill|boom bap|beat|diss|freestyle|cypher)\b', re.IGNORECASE)),
     ("Akustik & Folk", re.compile(r'\b(akustik|acoustic|unplugged|folk|live)\b', re.IGNORECASE)),
     ("Klasik & Soundtrack", re.compile(r'\b(soundtrack|theme|ost|score|instrumental|enstr[üu]mantal|piyano|piano|orchestra|senfoni)\b', re.IGNORECASE)),
     ("Rock", re.compile(r'\b(rock|metal|punk|grunge)\b', re.IGNORECASE)),
@@ -140,8 +140,8 @@ def map_raw_genres_to_macro(raw_genres: List[str]) -> List[str]:
         "Türkçe Rock / Anadolu Rock",
         "Türkçe Pop"
     }
-    if matched_categories.intersection(turkish_specific) and "Türkçe Diğer" in matched_categories:
-        matched_categories.discard("Türkçe Diğer")
+    if matched_categories.intersection(turkish_specific) and "Türkçe Halk & Sanat & Diğer" in matched_categories:
+        matched_categories.discard("Türkçe Halk & Sanat & Diğer")
 
     if not matched_categories:
         return []
