@@ -40,15 +40,52 @@ const app = {
         this.audioPlayer.addEventListener('ended', () => {
             this.state.isPlaying = false;
             this.updateAudioUi();
+            this.renderTracksTable();
         });
         this.audioPlayer.addEventListener('pause', () => {
             this.state.isPlaying = false;
             this.updateAudioUi();
+            this.renderTracksTable();
         });
         this.audioPlayer.addEventListener('play', () => {
             this.state.isPlaying = true;
             this.updateAudioUi();
+            this.renderTracksTable();
         });
+        this.audioPlayer.addEventListener('timeupdate', () => {
+            const cur = this.audioPlayer.currentTime || 0;
+            const dur = this.audioPlayer.duration || 30;
+            const pct = dur > 0 ? (cur / dur) * 100 : 0;
+            const fill = document.getElementById('audio-progress-fill');
+            const timeCur = document.getElementById('audio-time-current');
+            const timeTot = document.getElementById('audio-time-total');
+            if (fill) fill.style.width = `${pct}%`;
+            if (timeCur) timeCur.textContent = this.formatDuration(cur * 1000);
+            if (timeTot && dur) timeTot.textContent = this.formatDuration(dur * 1000);
+        });
+    },
+
+    seekAudio(event) {
+        if (!this.audioPlayer || !this.audioPlayer.duration) return;
+        const rect = event.currentTarget.getBoundingClientRect();
+        const clickX = event.clientX - rect.left;
+        const width = rect.width;
+        const ratio = Math.max(0, Math.min(1, clickX / width));
+        this.audioPlayer.currentTime = ratio * this.audioPlayer.duration;
+    },
+
+    setVolume(val) {
+        if (!this.audioPlayer) return;
+        this.audioPlayer.volume = Math.max(0, Math.min(1, parseFloat(val)));
+    },
+
+    focusSearch() {
+        this.showPlaylistsView();
+        const input = document.getElementById('playlist-search');
+        if (input) {
+            input.focus();
+            input.select();
+        }
     },
 
     checkUrlParams() {
@@ -136,12 +173,16 @@ const app = {
     showPlaylistsView() {
         this.hideAllViews();
         document.getElementById('view-playlists').classList.remove('hidden');
+        const topSearch = document.getElementById('topbar-search-container');
+        if (topSearch) topSearch.classList.remove('hidden');
         lucide.createIcons();
     },
 
     showAnalysisView() {
         this.hideAllViews();
         document.getElementById('view-analysis').classList.remove('hidden');
+        const topSearch = document.getElementById('topbar-search-container');
+        if (topSearch) topSearch.classList.add('hidden');
         lucide.createIcons();
     },
 
@@ -228,9 +269,41 @@ const app = {
         this.renderPlaylists();
     },
 
+    renderSidebarPlaylists() {
+        const sidebar = document.getElementById('sidebar-playlists-list');
+        if (!sidebar) return;
+        sidebar.innerHTML = '';
+        if (this.state.playlists.length === 0) {
+            sidebar.innerHTML = '<div class="p-3 text-center text-spotify-muted text-xs">Liste yok</div>';
+            return;
+        }
+
+        this.state.playlists.forEach(pl => {
+            const item = document.createElement('div');
+            item.className = 'flex items-center gap-3 p-2 rounded-md hover:bg-spotify-cardHover cursor-pointer group transition';
+            item.onclick = () => this.analyzePlaylist(pl.id);
+
+            const imgHtml = pl.image_url
+                ? `<img src="${pl.image_url}" alt="" class="w-11 h-11 rounded object-cover bg-spotify-surface shrink-0">`
+                : `<div class="w-11 h-11 rounded bg-spotify-highlight flex items-center justify-center text-spotify-muted shrink-0"><i data-lucide="music" class="w-5 h-5"></i></div>`;
+
+            item.innerHTML = `
+                ${imgHtml}
+                <div class="overflow-hidden">
+                    <div class="font-bold text-xs text-white truncate group-hover:text-spotify-green transition">${this.escapeHtml(pl.name)}</div>
+                    <div class="text-[11px] text-spotify-subdued truncate">Çalma Listesi • ${pl.total_tracks} şarkı</div>
+                </div>
+            `;
+            sidebar.appendChild(item);
+        });
+        lucide.createIcons();
+    },
+
     renderPlaylists() {
         const grid = document.getElementById('playlists-grid');
         const empty = document.getElementById('playlists-empty');
+
+        this.renderSidebarPlaylists();
 
         grid.innerHTML = '';
         if (this.state.filteredPlaylists.length === 0) {
@@ -242,36 +315,25 @@ const app = {
 
         this.state.filteredPlaylists.forEach(pl => {
             const card = document.createElement('div');
-            card.className = 'glass-card p-4 rounded-2xl flex flex-col justify-between group cursor-pointer relative';
+            card.className = 'spotify-card flex flex-col justify-between group cursor-pointer relative';
             card.onclick = () => this.analyzePlaylist(pl.id);
 
             const imgHtml = pl.image_url
-                ? `<img src="${pl.image_url}" alt="${this.escapeHtml(pl.name)}" class="w-full aspect-square object-cover rounded-xl shadow-md mb-3 bg-white/5">`
-                : `<div class="w-full aspect-square rounded-xl bg-spotify-gray flex items-center justify-center text-spotify-subdued mb-3"><i data-lucide="music" class="w-12 h-12"></i></div>`;
+                ? `<img src="${pl.image_url}" alt="${this.escapeHtml(pl.name)}" class="w-full aspect-square object-cover rounded-md shadow-md bg-spotify-surface">`
+                : `<div class="w-full aspect-square rounded-md bg-spotify-highlight flex items-center justify-center text-spotify-muted"><i data-lucide="music" class="w-12 h-12"></i></div>`;
 
-            const badgeHtml = pl.is_mine
-                ? `<span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-spotify-green/20 text-spotify-green border border-spotify-green/30">Kendi Listeniz</span>`
-                : `<span class="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-white/10 text-spotify-subdued">Takip Edilen</span>`;
+            const badgeText = pl.is_mine ? 'Kendi Listen' : 'Takip Edilen';
 
             card.innerHTML = `
                 <div>
-                    <div class="relative overflow-hidden rounded-xl">
+                    <div class="relative overflow-hidden rounded-md mb-3 aspect-square shadow-[0_8px_24px_rgba(0,0,0,0.5)]">
                         ${imgHtml}
-                        <button class="absolute bottom-5 right-2 w-10 h-10 rounded-full bg-spotify-green hover:bg-spotify-greenHover text-black flex items-center justify-center shadow-xl opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition duration-200">
-                            <i data-lucide="play" class="w-4 h-4 fill-black"></i>
+                        <button class="play-button absolute bottom-2 right-2 w-12 h-12 rounded-full bg-spotify-green hover:bg-spotify-greenHover hover:scale-105 active:scale-95 text-black flex items-center justify-center shadow-lg transition duration-200 z-10" title="Analiz Et">
+                            <svg class="w-5 h-5 ml-0.5 fill-black" viewBox="0 0 24 24"><path d="m7.05 3.606 13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
                         </button>
                     </div>
-                    <div class="flex items-center justify-between gap-1 mb-1.5">
-                        ${badgeHtml}
-                        <span class="text-[11px] text-spotify-subdued">${pl.total_tracks} şarkı</span>
-                    </div>
-                    <h4 class="font-bold text-sm text-white truncate mb-1" title="${this.escapeHtml(pl.name)}">${this.escapeHtml(pl.name)}</h4>
-                    <p class="text-[11px] text-spotify-subdued line-clamp-1 mb-2">Sahibi: ${this.escapeHtml(pl.owner)}</p>
-                </div>
-                <div class="flex items-center justify-between text-xs text-spotify-subdued pt-2 border-t border-white/5">
-                    <span class="text-spotify-green font-semibold text-[11px] group-hover:underline flex items-center gap-1">
-                        Türleri Böl <i data-lucide="arrow-right" class="w-3 h-3"></i>
-                    </span>
+                    <h4 class="font-bold text-sm sm:text-base text-white truncate mb-1" title="${this.escapeHtml(pl.name)}">${this.escapeHtml(pl.name)}</h4>
+                    <p class="text-xs text-spotify-subdued line-clamp-2">${badgeText} • ${pl.total_tracks} şarkı</p>
                 </div>
             `;
             grid.appendChild(card);
@@ -400,11 +462,11 @@ const app = {
         const btnMicro = document.getElementById('btn-mode-micro');
 
         if (mode === 'macro') {
-            btnMacro.className = 'px-3 py-1.5 rounded-lg bg-spotify-green text-black transition font-bold';
-            btnMicro.className = 'px-3 py-1.5 rounded-lg text-spotify-subdued hover:text-white transition';
+            btnMacro.className = 'px-3 py-1 rounded-full bg-white text-black font-bold transition';
+            btnMicro.className = 'px-3 py-1 rounded-full text-spotify-subdued hover:text-white transition';
         } else {
-            btnMicro.className = 'px-3 py-1.5 rounded-lg bg-spotify-green text-black transition font-bold';
-            btnMacro.className = 'px-3 py-1.5 rounded-lg text-spotify-subdued hover:text-white transition';
+            btnMicro.className = 'px-3 py-1 rounded-full bg-white text-black font-bold transition';
+            btnMacro.className = 'px-3 py-1 rounded-full text-spotify-subdued hover:text-white transition';
         }
 
         this.renderDistributionBar();
@@ -422,11 +484,7 @@ const app = {
 
         const isAllActive = this.state.selectedGenres.size === 0;
         const allChip = document.createElement('div');
-        allChip.className = `genre-pill inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${
-            isAllActive
-                ? 'bg-spotify-green text-black border-spotify-green'
-                : 'bg-spotify-gray/80 text-spotify-subdued border-white/10 hover:text-white'
-        }`;
+        allChip.className = `spotify-genre-pill inline-flex items-center gap-1.5 ${isAllActive ? 'active' : ''}`;
         allChip.innerHTML = `<span>Tümü</span> <span class="text-[10px] opacity-75">(${this.state.analysis.total_tracks})</span>`;
         allChip.onclick = () => {
             this.state.selectedGenres.clear();
@@ -438,15 +496,11 @@ const app = {
         genres.forEach((g) => {
             const isSelected = this.state.selectedGenres.has(g.name);
             const chip = document.createElement('div');
-            chip.className = `genre-pill inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border ${
-                isSelected
-                    ? 'bg-spotify-green text-black border-spotify-green'
-                    : 'bg-spotify-gray/80 text-white border-white/10 hover:border-spotify-green/40'
-            }`;
+            chip.className = `spotify-genre-pill inline-flex items-center gap-2 ${isSelected ? 'active' : ''}`;
 
             chip.innerHTML = `
                 <span onclick="app.toggleGenreFilter('${this.escapeHtml(g.name)}', event)">${this.escapeHtml(g.name)}</span>
-                <span class="text-[10px] ${isSelected ? 'text-black/80 font-bold' : 'text-spotify-subdued'}">(${g.count})</span>
+                <span class="text-[10px] ${isSelected ? 'text-black font-bold' : 'text-spotify-subdued'}">(${g.count})</span>
                 <button onclick="app.quickCreateGenrePlaylist('${this.escapeHtml(g.name)}', event)" class="p-0.5 rounded-full hover:bg-black/20 ${isSelected ? 'text-black' : 'text-spotify-green'}" title="'${this.escapeHtml(g.name)}' için Yeni Playlist Yap">
                     <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
                 </button>
@@ -517,48 +571,57 @@ const app = {
             const isAudioPlaying = this.state.currentAudioUrl === t.preview_url && this.state.isPlaying;
 
             const tr = document.createElement('tr');
-            tr.className = `track-row ${!isChecked ? 'excluded' : ''}`;
+            tr.className = `spotify-track-row group ${!isChecked ? 'excluded' : ''} ${isAudioPlaying ? 'is-playing' : ''}`;
 
             const durationStr = this.formatDuration(t.duration_ms);
             const genresToDisplay = (this.state.genreMode === 'macro' ? t.macro_genres : t.raw_genres).slice(0, 3);
 
             const genreBadgesHtml = genresToDisplay.map(g =>
-                `<span onclick="app.toggleGenreFilter('${this.escapeHtml(g)}')" class="inline-block px-2 py-0.5 rounded-full text-[10px] font-medium bg-white/5 hover:bg-spotify-green hover:text-black border border-white/10 text-spotify-subdued transition cursor-pointer mr-1 mb-1">${this.escapeHtml(g)}</span>`
+                `<span onclick="app.toggleGenreFilter('${this.escapeHtml(g)}')" class="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/5 hover:bg-white/20 text-spotify-subdued hover:text-white transition cursor-pointer mr-1 mb-1">${this.escapeHtml(g)}</span>`
             ).join('');
 
             const playBtnHtml = t.preview_url
-                ? `<button onclick="app.playPreview('${t.preview_url}', '${this.escapeHtml(t.name)}', '${this.escapeHtml(t.artists.join(', '))}', '${t.image_url}')" class="w-7 h-7 rounded-full bg-white/10 hover:bg-spotify-green hover:text-black text-white flex items-center justify-center transition" title="Önizlemeyi Dinle">
-                     <i data-lucide="${isAudioPlaying ? 'pause' : 'play'}" class="w-3.5 h-3.5"></i>
+                ? `<button onclick="app.playPreview('${t.preview_url}', '${this.escapeHtml(t.name)}', '${this.escapeHtml(t.artists.join(', '))}', '${t.image_url}')" class="w-6 h-6 rounded-full flex items-center justify-center text-white hover:scale-110 transition" title="Önizlemeyi Dinle">
+                     <i data-lucide="${isAudioPlaying ? 'pause' : 'play'}" class="w-3.5 h-3.5 fill-current"></i>
                    </button>`
-                : `<span class="text-[10px] text-spotify-subdued/50">-</span>`;
+                : `<span class="text-xs text-spotify-muted">-</span>`;
+
+            const numberColHtml = isAudioPlaying
+                ? `<div class="flex items-end justify-center gap-0.5 h-3">
+                     <span class="eq-bar"></span>
+                     <span class="eq-bar"></span>
+                     <span class="eq-bar"></span>
+                   </div>`
+                : `<span class="track-num text-xs text-spotify-subdued font-normal">${i + 1}</span>
+                   <div class="track-play-btn hidden items-center justify-center">${playBtnHtml}</div>`;
 
             tr.innerHTML = `
-                <td class="p-3 text-center">
+                <td class="p-2 text-center pl-2">
                     <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="app.toggleTrackSelection('${t.id}', this.checked)" class="w-4 h-4 rounded accent-spotify-green cursor-pointer">
                 </td>
-                <td class="p-3 text-center text-spotify-subdued">
-                    ${playBtnHtml}
+                <td class="p-2 text-center w-10">
+                    ${numberColHtml}
                 </td>
-                <td class="p-3">
+                <td class="p-2">
                     <div class="flex items-center gap-3">
-                        <img src="${t.image_url || ''}" alt="" class="w-9 h-9 rounded object-cover bg-white/10 shrink-0">
-                        <div class="max-w-[220px] sm:max-w-xs truncate">
-                            <div class="font-bold text-white text-xs truncate" title="${this.escapeHtml(t.name)}">${this.escapeHtml(t.name)}</div>
-                            <div class="text-[11px] text-spotify-subdued truncate">${this.escapeHtml(t.artists.join(', '))}</div>
+                        <img src="${t.image_url || ''}" alt="" class="w-10 h-10 rounded object-cover bg-spotify-surface shrink-0 shadow-sm">
+                        <div class="max-w-[200px] sm:max-w-xs md:max-w-sm truncate">
+                            <div class="track-title font-bold text-xs sm:text-sm truncate cursor-pointer hover:underline" title="${this.escapeHtml(t.name)}">${this.escapeHtml(t.name)}</div>
+                            <div class="text-xs text-spotify-subdued truncate hover:underline cursor-pointer">${this.escapeHtml(t.artists.join(', '))}</div>
                         </div>
                     </div>
                 </td>
-                <td class="p-3 text-spotify-subdued hidden md:table-cell max-w-[150px] truncate" title="${this.escapeHtml(t.album)}">
+                <td class="p-2 text-spotify-subdued hidden md:table-cell max-w-[150px] truncate text-xs hover:underline cursor-pointer" title="${this.escapeHtml(t.album)}">
                     ${this.escapeHtml(t.album)}
                 </td>
-                <td class="p-3 max-w-[200px]">
-                    ${genreBadgesHtml || '<span class="text-spotify-subdued text-[11px] italic">Bilinmiyor</span>'}
+                <td class="p-2 max-w-[200px]">
+                    ${genreBadgesHtml || '<span class="text-spotify-muted text-[11px] italic">Bilinmiyor</span>'}
                 </td>
-                <td class="p-3 text-right text-spotify-subdued font-mono">
+                <td class="p-2 text-right pr-4 text-spotify-subdued text-xs font-normal tabular-nums">
                     ${durationStr}
                 </td>
-                <td class="p-3 text-center">
-                    <a href="${t.spotify_url}" target="_blank" class="text-spotify-subdued hover:text-spotify-green p-1 inline-block transition" title="Spotify'da Aç">
+                <td class="p-2 text-center pr-2">
+                    <a href="${t.spotify_url}" target="_blank" class="text-spotify-subdued hover:text-white p-1 inline-block opacity-0 group-hover:opacity-100 transition" title="Spotify'da Aç">
                         <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
                     </a>
                 </td>
