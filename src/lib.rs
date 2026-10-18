@@ -1,0 +1,9 @@
+pub mod app;
+pub mod artist_db;
+pub mod audio;
+pub mod cache;
+pub mod classifier;
+pub mod config;
+pub mod deezer;
+pub mod spotify;
+pub mod ui;

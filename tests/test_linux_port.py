@@ -115,3 +115,76 @@ class TestLinuxPort:
         monkeypatch.delenv("RELEASE_TAG", raising=False)
         importlib.reload(package_release)
         assert package_release.VERSION == "v1.0.0"
+
+    def test_package_windows_release_with_binary(self, monkeypatch, tmp_path):
+        import shutil
+        from scripts import package_release
+        pkg_name = f"PlaylistOrganizer-{package_release.VERSION}-windows-x64"
+        exe_name = f"{pkg_name}.exe"
+        zip_name = f"{pkg_name}.zip"
+
+        rust_target = BASE_DIR / "target" / "release"
+        rust_target.mkdir(parents=True, exist_ok=True)
+        fake_exe = rust_target / "playlist-organizer.exe"
+        fake_exe.write_text("MZ_MOCK_WINDOWS_PE")
+        try:
+            zip_res = package_release.package_windows_release()
+            assert zip_res.exists()
+            assert (package_release.DIST_DIR / exe_name).exists()
+            assert (package_release.DIST_DIR / f"{exe_name}.sha256").exists()
+            assert (package_release.DIST_DIR / f"{zip_name}.sha256").exists()
+        finally:
+            if fake_exe.exists():
+                fake_exe.unlink()
+            for artifact in (
+                package_release.DIST_DIR / exe_name,
+                package_release.DIST_DIR / f"{exe_name}.sha256",
+                package_release.DIST_DIR / zip_name,
+                package_release.DIST_DIR / f"{zip_name}.sha256",
+            ):
+                if artifact.exists():
+                    artifact.unlink()
+            staging_dir = package_release.STAGING_DIR / pkg_name
+            if staging_dir.exists():
+                shutil.rmtree(staging_dir, ignore_errors=True)
+
+    def test_package_linux_release_clean(self):
+        import shutil
+        from scripts import package_release
+        pkg_name = f"PlaylistOrganizer-{package_release.VERSION}-linux-x86_64"
+        tar_name = f"{pkg_name}.tar.gz"
+        try:
+            tar_res = package_release.package_linux_release("playlist-organizer")
+            assert tar_res.exists()
+            assert (package_release.DIST_DIR / f"{tar_name}.sha256").exists()
+        finally:
+            for artifact in (
+                package_release.DIST_DIR / tar_name,
+                package_release.DIST_DIR / f"{tar_name}.sha256",
+            ):
+                if artifact.exists():
+                    artifact.unlink()
+            staging_dir = package_release.STAGING_DIR / pkg_name
+            if staging_dir.exists():
+                shutil.rmtree(staging_dir, ignore_errors=True)
+
+    def test_package_windows_portable_clean(self):
+        import shutil
+        from scripts import package_release
+        pkg_name = f"PlaylistOrganizer-{package_release.VERSION}-windows-portable"
+        zip_name = f"{pkg_name}.zip"
+        try:
+            zip_res = package_release.package_windows_portable()
+            assert zip_res.exists()
+            assert (package_release.DIST_DIR / f"{zip_name}.sha256").exists()
+        finally:
+            for artifact in (
+                package_release.DIST_DIR / zip_name,
+                package_release.DIST_DIR / f"{zip_name}.sha256",
+            ):
+                if artifact.exists():
+                    artifact.unlink()
+            staging_dir = package_release.STAGING_DIR / pkg_name
+            if staging_dir.exists():
+                shutil.rmtree(staging_dir, ignore_errors=True)
+

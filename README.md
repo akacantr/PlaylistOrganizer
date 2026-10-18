@@ -5,16 +5,15 @@
 <h1 align="center">Spotify Playlist Genre Organizer</h1>
 
 <p align="center">
-  <b>A modern, high-performance web application to automatically analyze, classify, and split your Spotify playlists into curated genre-specific playlists with a single click.</b>
+  <b>A modern, high-performance native desktop application written in Rust and egui (eframe) to automatically analyze, classify, and split your Spotify playlists into curated genre-specific playlists with a single click.</b>
 </p>
 
 <p align="center">
   <a href="https://github.com/akacantr/PlaylistOrganizer/releases/latest"><img src="https://img.shields.io/github/v/release/akacantr/PlaylistOrganizer?color=1db954&label=Release&style=flat-square" alt="Latest Release"></a>
-  <img src="https://img.shields.io/badge/Python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12%20%7C%203.13%20%7C%203.14-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python Support">
-  <img src="https://img.shields.io/badge/Platform-Linux%20%7C%20Windows%20%7C%20macOS-1ED760?style=flat-square" alt="Platform Support">
-  <img src="https://img.shields.io/badge/FastAPI-0.115+-009688?style=flat-square&logo=fastapi&logoColor=white" alt="FastAPI">
+  <img src="https://img.shields.io/badge/Rust-1.80%2B-DEA584?style=flat-square&logo=rust&logoColor=white" alt="Rust 1.80+">
+  <img src="https://img.shields.io/badge/GUI-egui%20%2F%20eframe-blue?style=flat-square" alt="egui / eframe">
+  <img src="https://img.shields.io/badge/Platform-Linux%20%7C%20Windows-1ED760?style=flat-square" alt="Platform Support">
   <img src="https://img.shields.io/badge/Spotify%20Web%20API-OAuth2-1DB954?style=flat-square&logo=spotify&logoColor=white" alt="Spotify API">
-  <img src="https://img.shields.io/badge/Docker-Ready-2496ED?style=flat-square&logo=docker&logoColor=white" alt="Docker Ready">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue?style=flat-square" alt="License: MIT"></a>
 </p>
 
@@ -359,14 +358,17 @@ PlaylistOrganizer/
 ## 🛠️ Developer Guide & Testing
 
 ### Running the Test Suite
-The repository includes a comprehensive unit test suite covering genre classification, fallback inference, URI deduplication, and Linux porting integrity:
+The repository includes comprehensive unit and integration test suites covering the Rust native core, 4-tier genre engine, URI deduplication, and platform integrity:
 
 ```bash
-# Run all tests
-pytest -v
+# Run all Rust tests (47+ tests)
+cargo test
 
-# Run with test coverage
-pytest --cov=app tests/
+# Run Rust release build
+cargo build --release
+
+# Run all Python backward-compatibility tests (40 tests)
+pytest -v
 ```
 
 ### Building Release Packages Locally

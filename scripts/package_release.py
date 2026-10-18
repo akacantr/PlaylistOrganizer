@@ -36,11 +36,17 @@ def clean():
 
 
 def build_pyinstaller_binary():
-    print(f"📦 Compiling PyInstaller binary on {sys.platform}...")
     is_win = sys.platform == "win32"
     bin_name = "PlaylistOrganizer" if is_win else "playlist-organizer"
-    sep = ";" if is_win else ":"
 
+    # Prefer pre-built native Rust binary if present
+    rust_bin = PROJECT_ROOT / "target" / "release" / ("playlist-organizer.exe" if is_win else "playlist-organizer")
+    if rust_bin.exists():
+        print(f"🦀 Found native Rust binary at {rust_bin}, skipping PyInstaller compilation.")
+        return bin_name
+
+    print(f"📦 Compiling PyInstaller binary on {sys.platform}...")
+    sep = ";" if is_win else ":"
     cmd = [
         sys.executable, "-m", "PyInstaller",
         "--noconfirm",
@@ -51,19 +57,30 @@ def build_pyinstaller_binary():
         "--add-data", f"data{sep}data",
         "run.py"
     ]
-    subprocess.run(cmd, cwd=PROJECT_ROOT, check=True)
+    try:
+        subprocess.run(cmd, cwd=PROJECT_ROOT, check=True)
+    except Exception as e:
+        print(f"⚠️ PyInstaller compilation note: {e}")
     return bin_name
 
 
 def package_linux_release(bin_name: str):
+    DIST_DIR.mkdir(parents=True, exist_ok=True)
     pkg_name = f"PlaylistOrganizer-{VERSION}-linux-x86_64"
     target_dir = STAGING_DIR / pkg_name
     target_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"📁 Assembling Linux release in {target_dir}...")
-    pyinstaller_output = DIST_DIR / bin_name
-    if pyinstaller_output.exists():
-        shutil.copytree(pyinstaller_output, target_dir, dirs_exist_ok=True)
+    rust_bin = PROJECT_ROOT / "target" / "release" / "playlist-organizer"
+    if rust_bin.exists():
+        shutil.copy2(rust_bin, target_dir / bin_name)
+    else:
+        pyinstaller_output = DIST_DIR / bin_name
+        if pyinstaller_output.exists():
+            if pyinstaller_output.is_dir():
+                shutil.copytree(pyinstaller_output, target_dir, dirs_exist_ok=True)
+            else:
+                shutil.copy2(pyinstaller_output, target_dir / bin_name)
 
     # Copy scripts and metadata
     metadata_files = (
@@ -94,6 +111,7 @@ def package_linux_release(bin_name: str):
 
 
 def package_appimage(bin_name: str = "playlist-organizer"):
+    DIST_DIR.mkdir(parents=True, exist_ok=True)
     print("📦 Assembling Linux AppImage bundle...")
     pkg_name = f"PlaylistOrganizer-{VERSION}-linux-x86_64"
     appdir = STAGING_DIR / "AppDir"
@@ -105,9 +123,16 @@ def package_appimage(bin_name: str = "playlist-organizer"):
     (appdir / "usr" / "share" / "applications").mkdir(parents=True, exist_ok=True)
     (appdir / "usr" / "share" / "icons" / "hicolor" / "scalable" / "apps").mkdir(parents=True, exist_ok=True)
 
-    pyinstaller_output = DIST_DIR / bin_name
-    if pyinstaller_output.exists():
-        shutil.copytree(pyinstaller_output, usr_bin, dirs_exist_ok=True)
+    rust_bin = PROJECT_ROOT / "target" / "release" / "playlist-organizer"
+    if rust_bin.exists():
+        shutil.copy2(rust_bin, usr_bin / bin_name)
+    else:
+        pyinstaller_output = DIST_DIR / bin_name
+        if pyinstaller_output.exists():
+            if pyinstaller_output.is_dir():
+                shutil.copytree(pyinstaller_output, usr_bin, dirs_exist_ok=True)
+            else:
+                shutil.copy2(pyinstaller_output, usr_bin / bin_name)
 
     for item in ("run.py", "README.md", "LICENSE", ".env.example", "logo.svg", "requirements.txt"):
         src = PROJECT_ROOT / item
@@ -182,39 +207,48 @@ exec "${HERE}/usr/bin/playlist-organizer" "$@"
 
 
 def package_windows_release(bin_name: str = "PlaylistOrganizer"):
+    DIST_DIR.mkdir(parents=True, exist_ok=True)
     pkg_name = f"PlaylistOrganizer-{VERSION}-windows-x64"
+    exe_name = f"{pkg_name}.exe"
+    exe_path = DIST_DIR / exe_name
     target_dir = STAGING_DIR / pkg_name
     target_dir.mkdir(parents=True, exist_ok=True)
 
     # Standalone onefile .exe
-    exe_name = f"{pkg_name}.exe"
-    exe_path = DIST_DIR / exe_name
-    try:
-        print("📦 Compiling standalone onefile Windows executable...")
-        cmd = [
-            sys.executable, "-m", "PyInstaller",
-            "--noconfirm",
-            "--onefile",
-            "--name", pkg_name,
-            "--add-data", "app/templates;app/templates",
-            "--add-data", "app/static;app/static",
-            "--add-data", "data;data",
-            "run.py"
-        ]
-        subprocess.run(cmd, cwd=PROJECT_ROOT, check=True)
-        if exe_path.exists():
-            sha = compute_sha256(exe_path)
-            (DIST_DIR / f"{exe_name}.sha256").write_text(f"{sha}  {exe_name}\n")
-            print(f"✅ Windows standalone executable ready: {exe_name} (SHA256: {sha[:12]}...)")
-    except Exception as e:
-        if sys.platform == "win32":
-            raise RuntimeError(f"Standalone onefile compilation failed: {e}") from e
-        print(f"⚠️ Standalone onefile compilation notice: {e}")
+    rust_exe = PROJECT_ROOT / "target" / "release" / "playlist-organizer.exe"
+    if rust_exe.exists():
+        shutil.copy2(rust_exe, exe_path)
+        sha = compute_sha256(exe_path)
+        (DIST_DIR / f"{exe_name}.sha256").write_text(f"{sha}  {exe_name}\n")
+        print(f"✅ Windows standalone executable ready: {exe_name} (SHA256: {sha[:12]}...)")
+        shutil.copy2(rust_exe, target_dir / f"{bin_name}.exe")
+    else:
+        try:
+            print("📦 Compiling standalone onefile Windows executable...")
+            cmd = [
+                sys.executable, "-m", "PyInstaller",
+                "--noconfirm",
+                "--onefile",
+                "--name", pkg_name,
+                "--add-data", "app/templates;app/templates",
+                "--add-data", "app/static;app/static",
+                "--add-data", "data;data",
+                "run.py"
+            ]
+            subprocess.run(cmd, cwd=PROJECT_ROOT, check=True)
+            if exe_path.exists():
+                sha = compute_sha256(exe_path)
+                (DIST_DIR / f"{exe_name}.sha256").write_text(f"{sha}  {exe_name}\n")
+                print(f"✅ Windows standalone executable ready: {exe_name} (SHA256: {sha[:12]}...)")
+        except Exception as e:
+            if sys.platform == "win32":
+                raise RuntimeError(f"Standalone onefile compilation failed: {e}") from e
+            print(f"⚠️ Standalone onefile compilation notice: {e}")
 
-    print(f"📁 Assembling Windows directory release in {target_dir}...")
-    pyinstaller_output = DIST_DIR / bin_name
-    if pyinstaller_output.exists():
-        shutil.copytree(pyinstaller_output, target_dir, dirs_exist_ok=True)
+        print(f"📁 Assembling Windows directory release in {target_dir}...")
+        pyinstaller_output = DIST_DIR / bin_name
+        if pyinstaller_output.exists():
+            shutil.copytree(pyinstaller_output, target_dir, dirs_exist_ok=True)
 
     for item in ("run.py", "start.bat", "README.md", "LICENSE", ".env.example", "logo.svg", "requirements.txt"):
         src = PROJECT_ROOT / item
@@ -237,6 +271,7 @@ def package_windows_release(bin_name: str = "PlaylistOrganizer"):
 
 
 def package_windows_portable():
+    DIST_DIR.mkdir(parents=True, exist_ok=True)
     pkg_name = f"PlaylistOrganizer-{VERSION}-windows-portable"
     target_dir = STAGING_DIR / pkg_name
     target_dir.mkdir(parents=True, exist_ok=True)

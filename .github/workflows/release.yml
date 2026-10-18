@@ -22,32 +22,24 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          cache: 'pip'
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
 
-      - name: Install dependencies
+      - name: Install Linux build dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pyinstaller
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev libudev-dev pkg-config
 
-      - name: Build Standalone Binary with PyInstaller
+      - name: Build Native Release Binary with Cargo
         run: |
-          pyinstaller --noconfirm --onedir --name playlist-organizer \
-            --add-data "app/templates:app/templates" \
-            --add-data "app/static:app/static" \
-            --add-data "data:data" \
-            run.py
+          cargo build --release
 
       - name: Package Linux Distribution
         run: |
           TAG="${{ github.ref_type == 'tag' && github.ref_name || inputs.tag_name || 'v1.0.0' }}"
           PKG_NAME="PlaylistOrganizer-${TAG}-linux-x86_64"
           mkdir -p "pkg_staging/${PKG_NAME}"
-          cp -r dist/playlist-organizer/* "pkg_staging/${PKG_NAME}/"
+          cp target/release/playlist-organizer "pkg_staging/${PKG_NAME}/"
           cp run.py start.sh playlist-organizer.desktop playlist-organizer.service install-desktop.sh README.md LICENSE .env.example logo.svg requirements.txt "pkg_staging/${PKG_NAME}/"
           chmod +x "pkg_staging/${PKG_NAME}/playlist-organizer" "pkg_staging/${PKG_NAME}/start.sh" "pkg_staging/${PKG_NAME}/install-desktop.sh"
           
@@ -66,8 +58,8 @@ jobs:
           mkdir -p "${APPDIR}/usr/share/applications"
           mkdir -p "${APPDIR}/usr/share/icons/hicolor/scalable/apps"
 
-          cp -r dist/playlist-organizer/* "${APPDIR}/usr/bin/"
-          cp run.py README.md LICENSE .env.example logo.svg requirements.txt "${APPDIR}/usr/bin/"
+          cp target/release/playlist-organizer "${APPDIR}/usr/bin/"
+          cp README.md LICENSE .env.example logo.svg "${APPDIR}/usr/bin/"
 
           cat << 'EOF' > "${APPDIR}/playlist-organizer.desktop"
 [Desktop Entry]
@@ -121,36 +113,12 @@ EOF
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          cache: 'pip'
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
 
-      - name: Install dependencies
+      - name: Build Native Release Binary with Cargo
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pyinstaller
-
-      - name: Build Standalone Executables with PyInstaller
-        shell: pwsh
-        run: |
-          $tag = if ('${{ github.ref_type }}' -eq 'tag') { '${{ github.ref_name }}' } else { '${{ inputs.tag_name }}' }
-          if (-not $tag) { $tag = "v1.0.0" }
-          # 1. Standalone single-file executable (.exe)
-          pyinstaller --noconfirm --onefile --name "PlaylistOrganizer-$tag-windows-x64" `
-            --add-data "app/templates;app/templates" `
-            --add-data "app/static;app/static" `
-            --add-data "data;data" `
-            run.py
-          
-          # 2. Standalone directory package
-          pyinstaller --noconfirm --onedir --name "PlaylistOrganizer" `
-            --add-data "app/templates;app/templates" `
-            --add-data "app/static;app/static" `
-            --add-data "data;data" `
-            run.py
+          cargo build --release
 
       - name: Package Windows Distribution
         shell: pwsh
@@ -160,15 +128,15 @@ EOF
           $pkgName = "PlaylistOrganizer-$tag-windows-x64"
           $exeName = "$pkgName.exe"
 
-          # 1. Standalone .exe hash and copy to root
-          Copy-Item -Path "dist\$exeName" -Destination "$exeName"
+          # 1. Standalone single-file executable (.exe)
+          Copy-Item -Path "target\release\playlist-organizer.exe" -Destination "$exeName"
           $exeHash = (Get-FileHash "$exeName" -Algorithm SHA256).Hash.ToLower()
           "$exeHash  $exeName`n" | Out-File -FilePath "$exeName.sha256" -Encoding ascii -NoNewline
 
           # 2. Package directory into zip
           New-Item -ItemType Directory -Path "pkg_staging\$pkgName" -Force | Out-Null
-          Copy-Item -Path "dist\PlaylistOrganizer\*" -Destination "pkg_staging\$pkgName" -Recurse
-          Copy-Item -Path "run.py", "start.bat", "README.md", "LICENSE", ".env.example", "logo.svg", "requirements.txt" -Destination "pkg_staging\$pkgName"
+          Copy-Item -Path "target\release\playlist-organizer.exe" -Destination "pkg_staging\$pkgName\PlaylistOrganizer.exe"
+          Copy-Item -Path "start.bat", "README.md", "LICENSE", ".env.example", "logo.svg" -Destination "pkg_staging\$pkgName"
           Compress-Archive -Path "pkg_staging\$pkgName" -DestinationPath "$pkgName.zip"
           $zipHash = (Get-FileHash "$pkgName.zip" -Algorithm SHA256).Hash.ToLower()
           "$zipHash  $pkgName.zip`n" | Out-File -FilePath "$pkgName.zip.sha256" -Encoding ascii -NoNewline
