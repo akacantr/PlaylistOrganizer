@@ -1,3 +1,4 @@
+import sys
 from pathlib import Path
 from typing import Optional, List, Dict, Any
 from fastapi import FastAPI, HTTPException, Query, Request
@@ -10,9 +11,19 @@ from . import config
 from . import spotify_client
 from . import genre_classifier
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+def get_bundle_dir() -> Path:
+    if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
+        return Path(sys._MEIPASS)
+    return Path(__file__).resolve().parent.parent
+
+BASE_DIR = get_bundle_dir()
 STATIC_DIR = BASE_DIR / "app" / "static"
+if not STATIC_DIR.exists():
+    STATIC_DIR = BASE_DIR / "static"
+
 TEMPLATES_DIR = BASE_DIR / "app" / "templates"
+if not TEMPLATES_DIR.exists():
+    TEMPLATES_DIR = BASE_DIR / "templates"
 
 app = FastAPI(
     title="Spotify Playlist Genre Organizer",

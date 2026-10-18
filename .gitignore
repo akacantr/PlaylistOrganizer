@@ -29,6 +29,12 @@ data/test_artist_cache.json
 scratch/
 *.log
 
+# Build & Packaging outputs
+build/
+dist/
+pkg_staging/
+*.spec
+
 # OS generated files
 .DS_Store
 Thumbs.db

@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  playlist-organizer:
+    build: .
+    container_name: playlist-organizer
+    restart: unless-stopped
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./.env:/app/.env
+      - ./data:/app/data
+      - ./.spotify_token_cache:/app/.spotify_token_cache
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8888
+      - HEADLESS=1

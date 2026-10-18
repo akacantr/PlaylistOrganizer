@@ -1,4 +1,5 @@
 import os
+import sys
 import requests
 from pathlib import Path
 from typing import Optional, Dict, Any, List
@@ -8,7 +9,7 @@ from spotipy.exceptions import SpotifyException
 
 from . import config
 
-CACHE_PATH = Path(__file__).resolve().parent.parent / ".spotify_token_cache"
+CACHE_PATH = config.BASE_DIR / ".spotify_token_cache"
 
 ARTIST_GENRES_CACHE: Dict[str, Dict[str, Any]] = {}
 
@@ -234,12 +235,20 @@ from app.artist_db import CURATED_ARTISTS
 
 HTTP_SESSION = requests.Session()
 
-DISK_CACHE_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "artist_cache.json")
+DISK_CACHE_PATH = os.path.join(str(config.BASE_DIR), "data", "artist_cache.json")
 DISK_CACHE_LOCK = threading.Lock()
 DISK_ARTIST_CACHE: Dict[str, List[str]] = {}
 
 try:
     os.makedirs(os.path.dirname(DISK_CACHE_PATH), exist_ok=True)
+    if not os.path.exists(DISK_CACHE_PATH) and getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
+        bundled_cache = os.path.join(sys._MEIPASS, "data", "artist_cache.json")
+        if os.path.exists(bundled_cache):
+            try:
+                import shutil
+                shutil.copy2(bundled_cache, DISK_CACHE_PATH)
+            except Exception:
+                pass
     if os.path.exists(DISK_CACHE_PATH):
         with open(DISK_CACHE_PATH, "r", encoding="utf-8") as f:
             DISK_ARTIST_CACHE = json.load(f)

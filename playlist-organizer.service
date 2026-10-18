@@ -1,0 +1,13 @@
+[Unit]
+Description=Spotify Playlist Genre Organizer Service
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/PlaylistOrganizer
+ExecStart=%h/PlaylistOrganizer/start.sh --no-browser
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=default.target

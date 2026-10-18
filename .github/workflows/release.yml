@@ -1,0 +1,150 @@
+name: Release Builds
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Release Tag (e.g. v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+
+permissions:
+  contents: write
+
+jobs:
+  build-linux:
+    name: Build Linux Release Bundle
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build Standalone Binary with PyInstaller
+        run: |
+          pyinstaller --noconfirm --onedir --name playlist-organizer \
+            --add-data "app/templates:app/templates" \
+            --add-data "app/static:app/static" \
+            --add-data "data:data" \
+            run.py
+
+      - name: Package Linux Distribution
+        run: |
+          TAG="${{ github.ref_name }}"
+          if [ -z "$TAG" ] || [ "$TAG" = "main" ]; then
+            TAG="${{ inputs.tag_name }}"
+          fi
+          PKG_NAME="PlaylistOrganizer-${TAG}-linux-x86_64"
+          mkdir -p "pkg_staging/${PKG_NAME}"
+          cp -r dist/playlist-organizer/* "pkg_staging/${PKG_NAME}/"
+          cp start.sh "pkg_staging/${PKG_NAME}/"
+          cp playlist-organizer.desktop "pkg_staging/${PKG_NAME}/"
+          cp install-desktop.sh "pkg_staging/${PKG_NAME}/"
+          cp README.md LICENSE .env.example logo.svg "pkg_staging/${PKG_NAME}/"
+          chmod +x "pkg_staging/${PKG_NAME}/playlist-organizer" "pkg_staging/${PKG_NAME}/start.sh" "pkg_staging/${PKG_NAME}/install-desktop.sh"
+          
+          cd pkg_staging
+          tar -czvf "../${PKG_NAME}.tar.gz" "${PKG_NAME}"
+          cd ..
+          sha256sum "${PKG_NAME}.tar.gz" > "${PKG_NAME}.tar.gz.sha256"
+
+      - name: Upload Linux Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-release
+          path: |
+            PlaylistOrganizer-*-linux-x86_64.tar.gz
+            PlaylistOrganizer-*-linux-x86_64.tar.gz.sha256
+
+  build-windows:
+    name: Build Windows Release Bundle
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build Standalone Executable with PyInstaller
+        run: |
+          pyinstaller --noconfirm --onedir --name PlaylistOrganizer `
+            --add-data "app/templates;app/templates" `
+            --add-data "app/static;app/static" `
+            --add-data "data;data" `
+            run.py
+
+      - name: Package Windows Distribution
+        shell: pwsh
+        run: |
+          $tag = if ($env:GITHUB_REF_NAME -and $env:GITHUB_REF_NAME -ne "main") { $env:GITHUB_REF_NAME } else { "${{ inputs.tag_name }}" }
+          $pkgName = "PlaylistOrganizer-$tag-windows-x64"
+          New-Item -ItemType Directory -Path "pkg_staging\$pkgName" -Force
+          Copy-Item -Path "dist\PlaylistOrganizer\*" -Destination "pkg_staging\$pkgName" -Recurse
+          Copy-Item -Path "start.bat", "README.md", "LICENSE", ".env.example", "logo.svg" -Destination "pkg_staging\$pkgName"
+          Compress-Archive -Path "pkg_staging\$pkgName" -DestinationPath "$pkgName.zip"
+          Get-FileHash "$pkgName.zip" -Algorithm SHA256 | Out-File -FilePath "$pkgName.zip.sha256"
+
+      - name: Upload Windows Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-release
+          path: |
+            PlaylistOrganizer-*-windows-x64.zip
+            PlaylistOrganizer-*-windows-x64.zip.sha256
+
+  publish-release:
+    name: Publish GitHub Release
+    needs: [build-linux, build-windows]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release_artifacts
+          merge-multiple: true
+
+      - name: Determine Tag
+        id: vars
+        run: |
+          TAG="${{ github.ref_name }}"
+          if [ -z "$TAG" ] || [ "$TAG" = "main" ]; then
+            TAG="${{ inputs.tag_name }}"
+          fi
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.vars.outputs.tag }}
+          name: PlaylistOrganizer ${{ steps.vars.outputs.tag }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            release_artifacts/*.tar.gz
+            release_artifacts/*.zip
+            release_artifacts/*.sha256

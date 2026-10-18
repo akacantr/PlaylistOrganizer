@@ -3,11 +3,15 @@ chcp 65001 >nul
 title Spotify Playlist Genre Organizer
 
 echo ========================================================
-echo  🎵 Spotify Playlist Genre Organizer Baslatiliyor...
+echo  🎵 Spotify Playlist Genre Organizer Starting...
 echo ========================================================
 
+cd /d "%~dp0"
+
 set PYTHON_EXE=
-if exist "%LOCALAPPDATA%\Python\bin\python.exe" (
+if exist "%~dp0.venv\Scripts\python.exe" (
+    set "PYTHON_EXE=%~dp0.venv\Scripts\python.exe"
+) else if exist "%LOCALAPPDATA%\Python\bin\python.exe" (
     set "PYTHON_EXE=%LOCALAPPDATA%\Python\bin\python.exe"
 ) else (
     where py >nul 2>nul
@@ -22,16 +26,17 @@ if exist "%LOCALAPPDATA%\Python\bin\python.exe" (
 )
 
 if "%PYTHON_EXE%"=="" (
-    echo [HATA] Python calistirilabilir dosyasi bulunamadi!
+    echo [ERROR] Python executable not found!
+    echo Please install Python 3.9+ from https://www.python.org/
     pause
     exit /b 1
 )
 
-echo Python bulundu: %PYTHON_EXE%
-"%PYTHON_EXE%" run.py
+echo Using Python: %PYTHON_EXE%
+"%PYTHON_EXE%" run.py %*
 
 if %errorlevel% neq 0 (
     echo.
-    echo Bir hata olustu.
+    echo Application exited with an error.
     pause
 )
