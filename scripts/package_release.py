@@ -18,6 +18,7 @@ DIST_DIR = PROJECT_ROOT / "dist"
 BUILD_DIR = PROJECT_ROOT / "build"
 STAGING_DIR = PROJECT_ROOT / "pkg_staging"
 
+
 def compute_sha256(filepath: Path) -> str:
     h = hashlib.sha256()
     with open(filepath, "rb") as f:
@@ -25,12 +26,14 @@ def compute_sha256(filepath: Path) -> str:
             h.update(chunk)
     return h.hexdigest()
 
+
 def clean():
     print("🧹 Cleaning previous build and staging artifacts...")
     for d in (BUILD_DIR, STAGING_DIR):
         if d.exists():
             shutil.rmtree(d)
     DIST_DIR.mkdir(parents=True, exist_ok=True)
+
 
 def build_pyinstaller_binary():
     print(f"📦 Compiling PyInstaller binary on {sys.platform}...")
@@ -51,6 +54,7 @@ def build_pyinstaller_binary():
     subprocess.run(cmd, cwd=PROJECT_ROOT, check=True)
     return bin_name
 
+
 def package_linux_release(bin_name: str):
     pkg_name = f"PlaylistOrganizer-{VERSION}-linux-x86_64"
     target_dir = STAGING_DIR / pkg_name
@@ -62,7 +66,12 @@ def package_linux_release(bin_name: str):
         shutil.copytree(pyinstaller_output, target_dir, dirs_exist_ok=True)
 
     # Copy scripts and metadata
-    for item in ("run.py", "start.sh", "install-desktop.sh", "playlist-organizer.desktop", "playlist-organizer.service", "README.md", "LICENSE", ".env.example", "logo.svg", "requirements.txt"):
+    metadata_files = (
+        "run.py", "start.sh", "install-desktop.sh", "playlist-organizer.desktop",
+        "playlist-organizer.service", "README.md", "LICENSE", ".env.example",
+        "logo.svg", "requirements.txt"
+    )
+    for item in metadata_files:
         src = PROJECT_ROOT / item
         if src.exists():
             shutil.copy2(src, target_dir)
@@ -82,6 +91,7 @@ def package_linux_release(bin_name: str):
     (DIST_DIR / f"{pkg_name}.tar.gz.sha256").write_text(f"{sha}  {archive_path.name}\n")
     print(f"✅ Linux release ready: {archive_path.name} (SHA256: {sha[:12]}...)")
     return archive_path
+
 
 def package_windows_release(bin_name: str):
     pkg_name = f"PlaylistOrganizer-{VERSION}-windows-x64"
@@ -112,6 +122,7 @@ def package_windows_release(bin_name: str):
     print(f"✅ Windows binary release ready: {archive_path.name} (SHA256: {sha[:12]}...)")
     return archive_path
 
+
 def package_windows_portable():
     pkg_name = f"PlaylistOrganizer-{VERSION}-windows-portable"
     target_dir = STAGING_DIR / pkg_name
@@ -140,6 +151,7 @@ def package_windows_portable():
     print(f"✅ Windows portable release ready: {archive_path.name} (SHA256: {sha[:12]}...)")
     return archive_path
 
+
 def main():
     clean()
     bin_name = build_pyinstaller_binary()
@@ -157,6 +169,7 @@ def main():
             sums.append(f"{compute_sha256(f)}  {f.name}\n")
     (DIST_DIR / "SHA256SUMS.txt").write_text("".join(sorted(sums)))
     print("🎉 All packaging completed successfully!")
+
 
 if __name__ == "__main__":
     main()

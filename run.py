@@ -6,6 +6,7 @@ import threading
 import webbrowser
 import uvicorn
 
+
 def reconfigure_streams():
     for stream in (sys.stdout, sys.stderr):
         try:
@@ -14,9 +15,11 @@ def reconfigure_streams():
         except Exception:
             pass
 
+
 reconfigure_streams()
 
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+
 
 def open_browser(url: str, delay: float = 1.2):
     def _open():
@@ -29,10 +32,12 @@ def open_browser(url: str, delay: float = 1.2):
 
     threading.Thread(target=_open, daemon=True).start()
 
+
 def main():
+    default_port = int(os.getenv("PORT", "8888"))
     parser = argparse.ArgumentParser(description="Spotify Playlist Genre Organizer")
     parser.add_argument("--host", default=os.getenv("HOST", "127.0.0.1"), help="Host IP to bind (default: 127.0.0.1)")
-    parser.add_argument("--port", type=int, default=int(os.getenv("PORT", "8888")), help="Port to listen on (default: 8888)")
+    parser.add_argument("--port", type=int, default=default_port, help="Port to listen on (default: 8888)")
     parser.add_argument("--no-browser", action="store_true", help="Do not open the browser automatically")
     parser.add_argument("--reload", action="store_true", default=False, help="Enable auto-reload (development only)")
     args = parser.parse_args()
@@ -57,6 +62,7 @@ def main():
     else:
         reload = args.reload or bool(os.getenv("DEV_MODE"))
         uvicorn.run("app.main:app", host=host, port=port, reload=reload, log_level="info")
+
 
 if __name__ == "__main__":
     main()

@@ -2,10 +2,10 @@ import os
 import sys
 import subprocess
 from pathlib import Path
-import pytest
 from app import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
 
 class TestLinuxPort:
     def test_start_sh_exists_and_executable(self):
