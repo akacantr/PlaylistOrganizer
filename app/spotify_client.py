@@ -241,14 +241,22 @@ DISK_ARTIST_CACHE: Dict[str, List[str]] = {}
 
 try:
     os.makedirs(os.path.dirname(DISK_CACHE_PATH), exist_ok=True)
-    if not os.path.exists(DISK_CACHE_PATH) and getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
-        bundled_cache = os.path.join(sys._MEIPASS, "data", "artist_cache.json")
-        if os.path.exists(bundled_cache):
-            try:
-                import shutil
-                shutil.copy2(bundled_cache, DISK_CACHE_PATH)
-            except Exception:
-                pass
+    if not os.path.exists(DISK_CACHE_PATH) and getattr(sys, "frozen", False):
+        bundled_candidates = []
+        if hasattr(sys, "_MEIPASS"):
+            bundled_candidates.append(os.path.join(sys._MEIPASS, "data", "artist_cache.json"))
+            bundled_candidates.append(os.path.join(sys._MEIPASS, "artist_cache.json"))
+        exe_parent = os.path.dirname(os.path.abspath(sys.executable))
+        bundled_candidates.append(os.path.join(exe_parent, "data", "artist_cache.json"))
+        bundled_candidates.append(os.path.join(exe_parent, "_internal", "data", "artist_cache.json"))
+        for bc in bundled_candidates:
+            if os.path.exists(bc):
+                try:
+                    import shutil
+                    shutil.copy2(bc, DISK_CACHE_PATH)
+                    break
+                except Exception:
+                    pass
     if os.path.exists(DISK_CACHE_PATH):
         with open(DISK_CACHE_PATH, "r", encoding="utf-8") as f:
             DISK_ARTIST_CACHE = json.load(f)

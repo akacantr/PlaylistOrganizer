@@ -12,7 +12,7 @@ import hashlib
 import subprocess
 from pathlib import Path
 
-VERSION = "v1.0.0"
+VERSION = os.environ.get("RELEASE_TAG", "v1.0.0")
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DIST_DIR = PROJECT_ROOT / "dist"
 BUILD_DIR = PROJECT_ROOT / "build"
@@ -205,6 +205,8 @@ def package_windows_release(bin_name: str = "PlaylistOrganizer"):
             (DIST_DIR / f"{exe_name}.sha256").write_text(f"{sha}  {exe_name}\n")
             print(f"✅ Windows standalone executable ready: {exe_name} (SHA256: {sha[:12]}...)")
     except Exception as e:
+        if sys.platform == "win32":
+            raise RuntimeError(f"Standalone onefile compilation failed: {e}") from e
         print(f"⚠️ Standalone onefile compilation notice: {e}")
 
     print(f"📁 Assembling Windows directory release in {target_dir}...")
@@ -275,7 +277,7 @@ def main():
     print("📝 Generating unified SHA256SUMS.txt...")
     sums = []
     for f in DIST_DIR.glob("*"):
-        if f.suffix in (".gz", ".zip", ".AppImage", ".exe"):
+        if f.is_file() and f.suffix in (".gz", ".zip", ".AppImage", ".exe"):
             sums.append(f"{compute_sha256(f)}  {f.name}\n")
     (DIST_DIR / "SHA256SUMS.txt").write_text("".join(sorted(sums)))
     print("🎉 All packaging completed successfully!")

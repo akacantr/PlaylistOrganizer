@@ -44,11 +44,11 @@ jobs:
 
       - name: Package Linux Distribution
         run: |
-          TAG="${{ github.ref_type == 'tag' && github.ref_name || inputs.tag_name }}"
+          TAG="${{ github.ref_type == 'tag' && github.ref_name || inputs.tag_name || 'v1.0.0' }}"
           PKG_NAME="PlaylistOrganizer-${TAG}-linux-x86_64"
           mkdir -p "pkg_staging/${PKG_NAME}"
           cp -r dist/playlist-organizer/* "pkg_staging/${PKG_NAME}/"
-          cp run.py start.sh playlist-organizer.desktop install-desktop.sh README.md LICENSE .env.example logo.svg requirements.txt "pkg_staging/${PKG_NAME}/"
+          cp run.py start.sh playlist-organizer.desktop playlist-organizer.service install-desktop.sh README.md LICENSE .env.example logo.svg requirements.txt "pkg_staging/${PKG_NAME}/"
           chmod +x "pkg_staging/${PKG_NAME}/playlist-organizer" "pkg_staging/${PKG_NAME}/start.sh" "pkg_staging/${PKG_NAME}/install-desktop.sh"
           
           cd pkg_staging
@@ -58,7 +58,7 @@ jobs:
 
       - name: Build Linux AppImage
         run: |
-          TAG="${{ github.ref_type == 'tag' && github.ref_name || inputs.tag_name }}"
+          TAG="${{ github.ref_type == 'tag' && github.ref_name || inputs.tag_name || 'v1.0.0' }}"
           APPIMAGE_NAME="PlaylistOrganizer-${TAG}-linux-x86_64.AppImage"
           APPDIR="pkg_staging/AppDir"
           rm -rf "${APPDIR}"
@@ -137,6 +137,7 @@ EOF
         shell: pwsh
         run: |
           $tag = if ('${{ github.ref_type }}' -eq 'tag') { '${{ github.ref_name }}' } else { '${{ inputs.tag_name }}' }
+          if (-not $tag) { $tag = "v1.0.0" }
           # 1. Standalone single-file executable (.exe)
           pyinstaller --noconfirm --onefile --name "PlaylistOrganizer-$tag-windows-x64" `
             --add-data "app/templates;app/templates" `
@@ -155,6 +156,7 @@ EOF
         shell: pwsh
         run: |
           $tag = if ('${{ github.ref_type }}' -eq 'tag') { '${{ github.ref_name }}' } else { '${{ inputs.tag_name }}' }
+          if (-not $tag) { $tag = "v1.0.0" }
           $pkgName = "PlaylistOrganizer-$tag-windows-x64"
           $exeName = "$pkgName.exe"
 
@@ -164,7 +166,7 @@ EOF
           "$exeHash  $exeName`n" | Out-File -FilePath "$exeName.sha256" -Encoding ascii -NoNewline
 
           # 2. Package directory into zip
-          New-Item -ItemType Directory -Path "pkg_staging\$pkgName" -Force
+          New-Item -ItemType Directory -Path "pkg_staging\$pkgName" -Force | Out-Null
           Copy-Item -Path "dist\PlaylistOrganizer\*" -Destination "pkg_staging\$pkgName" -Recurse
           Copy-Item -Path "run.py", "start.bat", "README.md", "LICENSE", ".env.example", "logo.svg", "requirements.txt" -Destination "pkg_staging\$pkgName"
           Compress-Archive -Path "pkg_staging\$pkgName" -DestinationPath "$pkgName.zip"
@@ -195,13 +197,19 @@ EOF
       - name: Determine Tag
         id: vars
         run: |
-          TAG="${{ github.ref_type == 'tag' && github.ref_name || inputs.tag_name }}"
+          TAG="${{ github.ref_type == 'tag' && github.ref_name || inputs.tag_name || 'v1.0.0' }}"
           echo "tag=$TAG" >> $GITHUB_OUTPUT
 
       - name: Generate Unified SHA256SUMS
         run: |
           cd release_artifacts
-          sha256sum *.tar.gz *.zip *.AppImage *.exe > SHA256SUMS.txt
+          shopt -s nullglob
+          files=(*.tar.gz *.zip *.AppImage *.exe)
+          if [ ${#files[@]} -gt 0 ]; then
+            sha256sum "${files[@]}" > SHA256SUMS.txt
+          else
+            echo "No release binaries found" > SHA256SUMS.txt
+          fi
           cat SHA256SUMS.txt
 
       - name: Create GitHub Release

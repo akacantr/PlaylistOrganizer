@@ -94,3 +94,25 @@ class TestLinuxPort:
         from scripts import package_release
         assert hasattr(package_release, "package_appimage")
         assert hasattr(package_release, "package_windows_release")
+        assert hasattr(package_release, "package_linux_release")
+
+    def test_release_workflow_structure(self):
+        workflow = (BASE_DIR / ".github" / "workflows" / "release.yml").read_text(encoding="utf-8")
+        assert "build-linux:" in workflow
+        assert "build-windows:" in workflow
+        assert "publish-release:" in workflow
+        assert "PlaylistOrganizer-*-windows-x64.exe" in workflow
+        assert "PlaylistOrganizer-*-linux-x86_64.AppImage" in workflow
+        assert "SHA256SUMS.txt" in workflow
+        assert "softprops/action-gh-release@v2" in workflow
+
+    def test_package_release_version_override(self, monkeypatch):
+        import importlib
+        from scripts import package_release
+        monkeypatch.setenv("RELEASE_TAG", "v2.5.0")
+        importlib.reload(package_release)
+        assert package_release.VERSION == "v2.5.0"
+        monkeypatch.delenv("RELEASE_TAG", raising=False)
+        importlib.reload(package_release)
+        assert package_release.VERSION == "v1.0.0"
+
