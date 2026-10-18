@@ -115,4 +115,3 @@ class TestLinuxPort:
         monkeypatch.delenv("RELEASE_TAG", raising=False)
         importlib.reload(package_release)
         assert package_release.VERSION == "v1.0.0"
-

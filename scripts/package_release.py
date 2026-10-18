@@ -94,7 +94,7 @@ def package_linux_release(bin_name: str):
 
 
 def package_appimage(bin_name: str = "playlist-organizer"):
-    print(f"📦 Assembling Linux AppImage bundle...")
+    print("📦 Assembling Linux AppImage bundle...")
     pkg_name = f"PlaylistOrganizer-{VERSION}-linux-x86_64"
     appdir = STAGING_DIR / "AppDir"
     if appdir.exists():
@@ -128,12 +128,14 @@ Keywords=spotify;playlist;music;genre;organizer;
 StartupNotify=true
 """
     (appdir / "playlist-organizer.desktop").write_text(desktop_content, encoding="utf-8")
-    (appdir / "usr" / "share" / "applications" / "playlist-organizer.desktop").write_text(desktop_content, encoding="utf-8")
+    desktop_dest = appdir / "usr" / "share" / "applications" / "playlist-organizer.desktop"
+    desktop_dest.write_text(desktop_content, encoding="utf-8")
 
     logo = PROJECT_ROOT / "logo.svg"
     if logo.exists():
         shutil.copy2(logo, appdir / "playlist-organizer.svg")
-        shutil.copy2(logo, appdir / "usr" / "share" / "icons" / "hicolor" / "scalable" / "apps" / "playlist-organizer.svg")
+        icon_dest = appdir / "usr" / "share" / "icons" / "hicolor" / "scalable" / "apps" / "playlist-organizer.svg"
+        shutil.copy2(logo, icon_dest)
 
     apprun_content = """#!/bin/sh
 SELF=$(readlink -f "$0")
@@ -188,7 +190,7 @@ def package_windows_release(bin_name: str = "PlaylistOrganizer"):
     exe_name = f"{pkg_name}.exe"
     exe_path = DIST_DIR / exe_name
     try:
-        print(f"📦 Compiling standalone onefile Windows executable...")
+        print("📦 Compiling standalone onefile Windows executable...")
         cmd = [
             sys.executable, "-m", "PyInstaller",
             "--noconfirm",
