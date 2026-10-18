@@ -594,7 +594,7 @@ const app = {
                     ${durationStr}
                 </td>
                 <td class="p-3 text-center">
-                    <a href="${t.spotify_url}" target="_blank" class="text-spotify-subdued hover:text-spotify-green p-1 inline-block transition" title="Spotify'da Aç">
+                    <a href="${t.spotify_url}" target="_blank" rel="noopener noreferrer" class="text-spotify-subdued hover:text-spotify-green p-1 inline-block transition" title="Spotify'da Aç">
                         <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
                     </a>
                 </td>
@@ -950,7 +950,7 @@ const app = {
                     <div class="font-bold text-white text-xs">${this.escapeHtml(p.name)}</div>
                     <div class="text-[11px] text-spotify-subdued">${p.total_tracks} şarkı eklendi</div>
                 </div>
-                <a href="${p.spotify_url}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-spotify-green hover:bg-spotify-greenHover text-black font-bold text-xs transition">
+                <a href="${p.spotify_url}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-spotify-green hover:bg-spotify-greenHover text-black font-bold text-xs transition">
                     Spotify'da Aç <i data-lucide="external-link" class="w-3 h-3"></i>
                 </a>
             `;

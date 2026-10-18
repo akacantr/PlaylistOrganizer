@@ -53,3 +53,12 @@ class TestConfig:
         monkeypatch.setenv("APPDIR", str(tmp_path / "mount"))
         monkeypatch.setenv("APPIMAGE", str(appimage_file))
         assert config.get_base_dir() == tmp_path
+
+    @pytest.mark.skipif(os.name != "posix", reason="POSIX file permissions")
+    def test_save_credentials_file_mode(self, monkeypatch, tmp_path):
+        env_file = tmp_path / ".env"
+        monkeypatch.setattr(config, "ENV_PATH", env_file)
+        config.save_credentials("test_client_id_12345", "test_client_secret_67890")
+        assert env_file.exists()
+        mode = oct(env_file.stat().st_mode & 0o777)
+        assert mode == oct(0o600)

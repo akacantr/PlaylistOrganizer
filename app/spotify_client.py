@@ -38,6 +38,11 @@ def handle_callback(code: str) -> Optional[Dict[str, Any]]:
     if not sp_oauth:
         return None
     token_info = sp_oauth.get_access_token(code, as_dict=True)
+    if CACHE_PATH.exists():
+        try:
+            CACHE_PATH.chmod(0o600)
+        except OSError:
+            pass
     return token_info
 
 def is_authenticated() -> bool:
@@ -92,7 +97,7 @@ def get_current_user_profile() -> Optional[Dict[str, Any]]:
             "avatar": avatar,
             "product": user.get("product", ""),
             "country": user.get("country", ""),
-            "spotify_url": user.get("external_urls", {}).get("spotify", "")
+            "spotify_url": (user.get("external_urls") or {}).get("spotify", "")
         }
         CURRENT_USER_CACHE = profile
         return profile
@@ -133,20 +138,20 @@ def get_user_playlists() -> List[Dict[str, Any]]:
                     "name": pl.get("name"),
                     "description": pl.get("description", ""),
                     "image_url": image_url,
-                    "total_tracks": pl.get("tracks", {}).get("total", 0),
+                    "total_tracks": (pl.get("tracks") or {}).get("total", 0),
                     "owner": owner_name,
                     "owner_id": owner_id,
                     "is_mine": is_mine,
                     "is_public": pl.get("public", False),
                     "is_collaborative": pl.get("collaborative", False),
-                    "spotify_url": pl.get("external_urls", {}).get("spotify", "")
+                    "spotify_url": (pl.get("external_urls") or {}).get("spotify", "")
                 })
 
             if len(items) < limit:
                 break
             offset += limit
 
-        playlists.sort(key=lambda p: (not p["is_mine"], p["name"].lower()))
+        playlists.sort(key=lambda p: (not p["is_mine"], (p.get("name") or "").lower()))
         return playlists
     except Exception as e:
         print(f"Error fetching playlists: {e}")
@@ -177,7 +182,7 @@ def get_playlist_details(playlist_id: str) -> Optional[Dict[str, Any]]:
             "owner": owner_name,
             "is_mine": is_mine,
             "is_public": pl.get("public", False),
-            "spotify_url": pl.get("external_urls", {}).get("spotify", "")
+            "spotify_url": (pl.get("external_urls") or {}).get("spotify", "")
         }
     except Exception as e:
         print(f"Error getting playlist details: {e}")
@@ -221,11 +226,11 @@ def get_all_playlist_tracks(playlist_id: str) -> List[Dict[str, Any]]:
         if e.http_status == 403:
             raise PermissionError(
                 "Spotify API kısıtlaması (Development Mode): Bu çalma listesi başka bir kullanıcıya ait olduğu için şarkıları okunamıyor. Lütfen kendi oluşturduğunuz bir çalma listesini seçin."
-            )
-        raise e
+            ) from e
+        raise
     except Exception as e:
         print(f"Error fetching playlist tracks: {e}")
-        raise e
+        raise
 
 import concurrent.futures
 
@@ -255,7 +260,7 @@ try:
                     import shutil
                     shutil.copy2(bc, DISK_CACHE_PATH)
                     break
-                except Exception:
+                except OSError:
                     pass
     if os.path.exists(DISK_CACHE_PATH):
         with open(DISK_CACHE_PATH, "r", encoding="utf-8") as f:
@@ -270,7 +275,7 @@ def save_to_disk_cache(artist_clean: str, genres: List[str]):
         try:
             with open(DISK_CACHE_PATH, "w", encoding="utf-8") as f:
                 json.dump(DISK_ARTIST_CACHE, f, ensure_ascii=False, indent=2)
-        except Exception:
+        except OSError:
             pass
 
 def fetch_artist_genre_fallback(artist_name: str) -> List[str]:
@@ -291,15 +296,17 @@ def fetch_artist_genre_fallback(artist_name: str) -> List[str]:
         if res.status_code == 200:
             data = res.json().get("data", [])
             if data:
-                alb_id = data[0].get("album", {}).get("id")
+                alb_id = (data[0].get("album") or {}).get("id")
                 if alb_id:
                     alb_res = HTTP_SESSION.get(f"https://api.deezer.com/album/{alb_id}", timeout=2.5)
                     if alb_res.status_code == 200:
-                        genres = [g.get("name") for g in alb_res.json().get("genres", {}).get("data", []) if g.get("name")]
+                        alb_data = alb_res.json()
+                        genres_obj = alb_data.get("genres") or {}
+                        genres = [g.get("name") for g in (genres_obj.get("data") or []) if isinstance(g, dict) and g.get("name")]
                         if genres:
                             save_to_disk_cache(a_clean, genres)
                             return genres
-    except Exception:
+    except (requests.RequestException, ValueError, KeyError):
         pass
 
     try:
@@ -313,15 +320,17 @@ def fetch_artist_genre_fallback(artist_name: str) -> List[str]:
                 if top_res.status_code == 200:
                     top_tracks = top_res.json().get("data", [])
                     if top_tracks:
-                        alb_id = top_tracks[0].get("album", {}).get("id")
+                        alb_id = (top_tracks[0].get("album") or {}).get("id")
                         if alb_id:
                             alb_res = HTTP_SESSION.get(f"https://api.deezer.com/album/{alb_id}", timeout=2.5)
                             if alb_res.status_code == 200:
-                                genres = [g.get("name") for g in alb_res.json().get("genres", {}).get("data", []) if g.get("name")]
+                                alb_data = alb_res.json()
+                                genres_obj = alb_data.get("genres") or {}
+                                genres = [g.get("name") for g in (genres_obj.get("data") or []) if isinstance(g, dict) and g.get("name")]
                                 if genres:
                                     save_to_disk_cache(a_clean, genres)
                                     return genres
-    except Exception:
+    except (requests.RequestException, ValueError, KeyError):
         pass
 
     save_to_disk_cache(a_clean, [])

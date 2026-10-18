@@ -190,8 +190,8 @@ fn test_config_credentials_validation() {
     cfg.client_secret = "short".into();
     assert!(!config::has_valid_credentials(&cfg));
 
-    cfg.client_id = "0123456789abcdef0123456789".into();
-    cfg.client_secret = "0123456789abcdef0123456789".into();
+    cfg.client_id = "mock_test_client_id_placeholder".into();
+    cfg.client_secret = "mock_test_client_secret_placeholder".into();
     assert!(config::has_valid_credentials(&cfg));
 }
 

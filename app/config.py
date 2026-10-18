@@ -60,11 +60,16 @@ def save_credentials(client_id: str, client_secret: str, redirect_uri: str = DEF
     redirect_uri = redirect_uri.strip() or DEFAULT_REDIRECT_URI
 
     if not ENV_PATH.exists():
-        ENV_PATH.touch()
+        ENV_PATH.touch(mode=0o600)
 
     set_key(str(ENV_PATH), "SPOTIPY_CLIENT_ID", client_id)
     set_key(str(ENV_PATH), "SPOTIPY_CLIENT_SECRET", client_secret)
     set_key(str(ENV_PATH), "SPOTIPY_REDIRECT_URI", redirect_uri)
+
+    try:
+        ENV_PATH.chmod(0o600)
+    except OSError:
+        pass
 
     os.environ["SPOTIPY_CLIENT_ID"] = client_id
     os.environ["SPOTIPY_CLIENT_SECRET"] = client_secret

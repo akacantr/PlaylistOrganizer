@@ -66,6 +66,11 @@ impl SpotifyAuth {
         }
         if let Ok(json_str) = serde_json::to_string_pretty(token) {
             let _ = fs::write(&self.token_cache_path, json_str);
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::PermissionsExt;
+                let _ = fs::set_permissions(&self.token_cache_path, fs::Permissions::from_mode(0o600));
+            }
         }
     }
 

@@ -61,32 +61,11 @@ jobs:
           cp target/release/playlist-organizer "${APPDIR}/usr/bin/"
           cp README.md LICENSE .env.example logo.svg "${APPDIR}/usr/bin/"
 
-          cat << 'EOF' > "${APPDIR}/playlist-organizer.desktop"
-[Desktop Entry]
-Version=1.0
-Type=Application
-Name=Spotify Playlist Genre Organizer
-GenericName=Playlist Organizer
-Comment=Organize, filter, and split your Spotify playlists by genre
-Exec=playlist-organizer
-Icon=playlist-organizer
-Terminal=false
-Categories=AudioVideo;Audio;Utility;
-Keywords=spotify;playlist;music;genre;organizer;
-StartupNotify=true
-EOF
-          cp "${APPDIR}/playlist-organizer.desktop" "${APPDIR}/usr/share/applications/"
+          cp playlist-organizer.desktop "${APPDIR}/playlist-organizer.desktop"
+          cp playlist-organizer.desktop "${APPDIR}/usr/share/applications/"
           cp logo.svg "${APPDIR}/playlist-organizer.svg"
           cp logo.svg "${APPDIR}/usr/share/icons/hicolor/scalable/apps/playlist-organizer.svg"
-
-          cat << 'EOF' > "${APPDIR}/AppRun"
-#!/bin/sh
-SELF=$(readlink -f "$0")
-HERE=${SELF%/*}
-export PATH="${HERE}/usr/bin:${PATH}"
-export APPDIR="${HERE}"
-exec "${HERE}/usr/bin/playlist-organizer" "$@"
-EOF
+          cp scripts/AppRun "${APPDIR}/AppRun"
           chmod +x "${APPDIR}/AppRun" "${APPDIR}/usr/bin/playlist-organizer"
 
           curl -sL https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage -o appimagetool
@@ -182,6 +161,8 @@ EOF
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ steps.vars.outputs.tag }}
           name: PlaylistOrganizer ${{ steps.vars.outputs.tag }}

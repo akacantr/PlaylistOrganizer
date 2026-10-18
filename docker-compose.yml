@@ -6,7 +6,7 @@ services:
     container_name: playlist-organizer
     restart: unless-stopped
     ports:
-      - "8888:8888"
+      - "127.0.0.1:8888:8888"
     volumes:
       - ./.env:/app/.env
       - ./data:/app/data

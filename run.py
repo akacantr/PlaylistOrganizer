@@ -12,7 +12,7 @@ def reconfigure_streams():
         try:
             if hasattr(stream, "reconfigure"):
                 stream.reconfigure(encoding="utf-8", errors="replace")
-        except Exception:
+        except (AttributeError, ValueError, OSError):
             pass
 
 

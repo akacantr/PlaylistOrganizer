@@ -10,6 +10,7 @@ import tarfile
 import zipfile
 import hashlib
 import subprocess
+import tempfile
 from pathlib import Path
 
 VERSION = os.environ.get("RELEASE_TAG", "v1.0.0")
@@ -183,7 +184,7 @@ exec "${HERE}/usr/bin/playlist-organizer" "$@"
     appimagetool = shutil.which("appimagetool")
     if not appimagetool:
         candidates = [
-            Path("/tmp/squashfs-root/AppRun"),
+            Path(tempfile.gettempdir()) / "squashfs-root" / "AppRun",
             PROJECT_ROOT / "squashfs-root" / "AppRun",
             PROJECT_ROOT / "appimagetool"
         ]
@@ -262,7 +263,7 @@ def package_windows_release(bin_name: str = "PlaylistOrganizer"):
             for file in files:
                 abs_f = Path(root) / file
                 rel_f = abs_f.relative_to(STAGING_DIR)
-                zipf.write(abs_f, arcname=rel_f)
+                zipf.write(abs_f, arcname=rel_f.as_posix())
 
     sha = compute_sha256(archive_path)
     (DIST_DIR / f"{pkg_name}.zip.sha256").write_text(f"{sha}  {archive_path.name}\n")
@@ -292,7 +293,7 @@ def package_windows_portable():
             for file in files:
                 abs_f = Path(root) / file
                 rel_f = abs_f.relative_to(STAGING_DIR)
-                zipf.write(abs_f, arcname=rel_f)
+                zipf.write(abs_f, arcname=rel_f.as_posix())
 
     sha = compute_sha256(archive_path)
     (DIST_DIR / f"{pkg_name}.zip.sha256").write_text(f"{sha}  {archive_path.name}\n")

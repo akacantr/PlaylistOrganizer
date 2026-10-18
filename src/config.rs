@@ -170,6 +170,12 @@ pub fn save_config(config: &AppConfig) -> std::io::Result<()> {
 
     fs::write(&env_path, content)?;
 
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        let _ = fs::set_permissions(&env_path, fs::Permissions::from_mode(0o600));
+    }
+
     std::env::set_var("SPOTIPY_CLIENT_ID", client_id);
     std::env::set_var("SPOTIPY_CLIENT_SECRET", client_secret);
     std::env::set_var("SPOTIPY_REDIRECT_URI", redirect_uri);
@@ -196,10 +202,25 @@ mod tests {
         assert!(!has_valid_credentials(&invalid));
 
         let valid = AppConfig {
-            client_id: "0123456789abcdef0123456789abcdef".into(),
-            client_secret: "0123456789abcdef0123456789abcdef".into(),
+            client_id: "mock_test_client_id_placeholder".into(),
+            client_secret: "mock_test_client_secret_placeholder".into(),
             redirect_uri: DEFAULT_REDIRECT_URI.into(),
         };
         assert!(has_valid_credentials(&valid));
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn test_save_config_permissions() {
+        use std::os::unix::fs::PermissionsExt;
+        let tmp_dir = std::env::temp_dir().join(format!("po_test_{}", std::process::id()));
+        let _ = fs::create_dir_all(&tmp_dir);
+        let env_file = tmp_dir.join(".env");
+        let content = "TEST=1\n";
+        let _ = fs::write(&env_file, content);
+        let _ = fs::set_permissions(&env_file, fs::Permissions::from_mode(0o600));
+        let meta = fs::metadata(&env_file).unwrap();
+        assert_eq!(meta.permissions().mode() & 0o777, 0o600);
+        let _ = fs::remove_dir_all(&tmp_dir);
     }
 }

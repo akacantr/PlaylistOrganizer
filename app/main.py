@@ -33,7 +33,10 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://127.0.0.1:8888",
+        "http://localhost:8888",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -157,9 +160,9 @@ def analyze_playlist(playlist_id: str):
     try:
         raw_tracks = spotify_client.get_all_playlist_tracks(playlist_id)
     except PermissionError as pe:
-        raise HTTPException(status_code=403, detail=str(pe))
+        raise HTTPException(status_code=403, detail=str(pe)) from pe
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Şarkılar alınırken hata oluştu: {e}")
+        raise HTTPException(status_code=500, detail=f"Şarkılar alınırken hata oluştu: {e}") from e
 
     if not raw_tracks:
         return {
