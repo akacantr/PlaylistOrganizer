@@ -44,17 +44,11 @@ jobs:
 
       - name: Package Linux Distribution
         run: |
-          TAG="${{ github.ref_name }}"
-          if [ -z "$TAG" ] || [ "$TAG" = "main" ]; then
-            TAG="${{ inputs.tag_name }}"
-          fi
+          TAG="${{ github.ref_type == 'tag' && github.ref_name || inputs.tag_name }}"
           PKG_NAME="PlaylistOrganizer-${TAG}-linux-x86_64"
           mkdir -p "pkg_staging/${PKG_NAME}"
           cp -r dist/playlist-organizer/* "pkg_staging/${PKG_NAME}/"
-          cp start.sh "pkg_staging/${PKG_NAME}/"
-          cp playlist-organizer.desktop "pkg_staging/${PKG_NAME}/"
-          cp install-desktop.sh "pkg_staging/${PKG_NAME}/"
-          cp README.md LICENSE .env.example logo.svg "pkg_staging/${PKG_NAME}/"
+          cp run.py start.sh playlist-organizer.desktop install-desktop.sh README.md LICENSE .env.example logo.svg requirements.txt "pkg_staging/${PKG_NAME}/"
           chmod +x "pkg_staging/${PKG_NAME}/playlist-organizer" "pkg_staging/${PKG_NAME}/start.sh" "pkg_staging/${PKG_NAME}/install-desktop.sh"
           
           cd pkg_staging
@@ -90,23 +84,21 @@ jobs:
           pip install pyinstaller
 
       - name: Build Standalone Executable with PyInstaller
+        shell: pwsh
         run: |
-          pyinstaller --noconfirm --onedir --name PlaylistOrganizer `
-            --add-data "app/templates;app/templates" `
-            --add-data "app/static;app/static" `
-            --add-data "data;data" `
-            run.py
+          pyinstaller --noconfirm --onedir --name PlaylistOrganizer --add-data "app/templates;app/templates" --add-data "app/static;app/static" --add-data "data;data" run.py
 
       - name: Package Windows Distribution
         shell: pwsh
         run: |
-          $tag = if ($env:GITHUB_REF_NAME -and $env:GITHUB_REF_NAME -ne "main") { $env:GITHUB_REF_NAME } else { "${{ inputs.tag_name }}" }
+          $tag = if ('${{ github.ref_type }}' -eq 'tag') { '${{ github.ref_name }}' } else { '${{ inputs.tag_name }}' }
           $pkgName = "PlaylistOrganizer-$tag-windows-x64"
           New-Item -ItemType Directory -Path "pkg_staging\$pkgName" -Force
           Copy-Item -Path "dist\PlaylistOrganizer\*" -Destination "pkg_staging\$pkgName" -Recurse
-          Copy-Item -Path "start.bat", "README.md", "LICENSE", ".env.example", "logo.svg" -Destination "pkg_staging\$pkgName"
+          Copy-Item -Path "run.py", "start.bat", "README.md", "LICENSE", ".env.example", "logo.svg", "requirements.txt" -Destination "pkg_staging\$pkgName"
           Compress-Archive -Path "pkg_staging\$pkgName" -DestinationPath "$pkgName.zip"
-          Get-FileHash "$pkgName.zip" -Algorithm SHA256 | Out-File -FilePath "$pkgName.zip.sha256"
+          $hash = (Get-FileHash "$pkgName.zip" -Algorithm SHA256).Hash.ToLower()
+          "$hash  $pkgName.zip`n" | Out-File -FilePath "$pkgName.zip.sha256" -Encoding ascii -NoNewline
 
       - name: Upload Windows Artifact
         uses: actions/upload-artifact@v4
@@ -130,11 +122,14 @@ jobs:
       - name: Determine Tag
         id: vars
         run: |
-          TAG="${{ github.ref_name }}"
-          if [ -z "$TAG" ] || [ "$TAG" = "main" ]; then
-            TAG="${{ inputs.tag_name }}"
-          fi
+          TAG="${{ github.ref_type == 'tag' && github.ref_name || inputs.tag_name }}"
           echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+      - name: Generate Unified SHA256SUMS
+        run: |
+          cd release_artifacts
+          sha256sum *.tar.gz *.zip > SHA256SUMS.txt
+          cat SHA256SUMS.txt
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -148,3 +143,4 @@ jobs:
             release_artifacts/*.tar.gz
             release_artifacts/*.zip
             release_artifacts/*.sha256
+            release_artifacts/SHA256SUMS.txt

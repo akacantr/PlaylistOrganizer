@@ -125,7 +125,7 @@ Download the pre-compiled standalone package from [Releases](https://github.com/
 ```bash
 tar -xvf PlaylistOrganizer-v1.0.0-linux-x86_64.tar.gz
 cd PlaylistOrganizer-v1.0.0-linux-x86_64
-./playlist-organizer
+./start.sh    # or directly: ./playlist-organizer
 ```
 
 ### Method 3: Desktop App Menu Integration (`.desktop`)
@@ -137,12 +137,18 @@ chmod +x install-desktop.sh
 ```
 This registers the application shortcut and installs high-resolution vector icons to `~/.local/share/applications/` and `~/.local/share/icons/`.
 
+To uninstall the desktop shortcut:
+```bash
+./install-desktop.sh --uninstall
+```
+
 ### Method 4: Systemd User Service (Background Daemon)
 
 If you are running the application on a headless home server or want it to start automatically upon login:
 ```bash
 mkdir -p ~/.config/systemd/user
-cp playlist-organizer.service ~/.config/systemd/user/
+# Auto-configure service unit with your current working directory:
+sed "s|%h/PlaylistOrganizer|$PWD|g" playlist-organizer.service > ~/.config/systemd/user/playlist-organizer.service
 systemctl --user daemon-reload
 systemctl --user enable --now playlist-organizer
 ```

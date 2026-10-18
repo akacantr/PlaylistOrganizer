@@ -54,3 +54,33 @@ class TestLinuxPort:
         base_dir = config.get_base_dir()
         assert base_dir.exists()
         assert (base_dir / "app").exists()
+
+    def test_start_sh_binary_dispatch(self, tmp_path):
+        import shutil
+        script = tmp_path / "start.sh"
+        shutil.copy2(BASE_DIR / "start.sh", script)
+        script.chmod(0o755)
+
+        mock_bin = tmp_path / "playlist-organizer"
+        mock_bin.write_text("#!/bin/sh\necho 'MOCK_BINARY_RUN: '$@\n")
+        mock_bin.chmod(0o755)
+
+        res = subprocess.run([str(script), "--test-arg", "123"], capture_output=True, text=True)
+        assert res.returncode == 0
+        assert "MOCK_BINARY_RUN: --test-arg 123" in res.stdout
+
+    def test_start_bat_contains_binary_dispatch(self):
+        bat = (BASE_DIR / "start.bat").read_text(encoding="utf-8")
+        assert "PlaylistOrganizer.exe" in bat
+        assert "%*" in bat
+
+    def test_install_desktop_uninstall_flag(self):
+        content = (BASE_DIR / "install-desktop.sh").read_text(encoding="utf-8")
+        assert "--uninstall" in content
+        assert "rm -f" in content
+
+    def test_start_sh_help(self):
+        res = subprocess.run([str(BASE_DIR / "start.sh"), "--help"], capture_output=True, text=True)
+        assert res.returncode == 0
+        assert "--host" in res.stdout
+        assert "--port" in res.stdout

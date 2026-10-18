@@ -8,6 +8,17 @@ echo ========================================================
 
 cd /d "%~dp0"
 
+if exist "%~dp0PlaylistOrganizer.exe" (
+    echo Starting standalone executable: PlaylistOrganizer.exe
+    "%~dp0PlaylistOrganizer.exe" %*
+    if %errorlevel% neq 0 (
+        echo.
+        echo Application exited with an error.
+        pause
+    )
+    exit /b %errorlevel%
+)
+
 set PYTHON_EXE=
 if exist "%~dp0.venv\Scripts\python.exe" (
     set "PYTHON_EXE=%~dp0.venv\Scripts\python.exe"

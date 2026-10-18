@@ -62,7 +62,7 @@ def package_linux_release(bin_name: str):
         shutil.copytree(pyinstaller_output, target_dir, dirs_exist_ok=True)
 
     # Copy scripts and metadata
-    for item in ("start.sh", "install-desktop.sh", "playlist-organizer.desktop", "playlist-organizer.service", "README.md", "LICENSE", ".env.example", "logo.svg", "requirements.txt"):
+    for item in ("run.py", "start.sh", "install-desktop.sh", "playlist-organizer.desktop", "playlist-organizer.service", "README.md", "LICENSE", ".env.example", "logo.svg", "requirements.txt"):
         src = PROJECT_ROOT / item
         if src.exists():
             shutil.copy2(src, target_dir)
@@ -81,6 +81,35 @@ def package_linux_release(bin_name: str):
     sha = compute_sha256(archive_path)
     (DIST_DIR / f"{pkg_name}.tar.gz.sha256").write_text(f"{sha}  {archive_path.name}\n")
     print(f"✅ Linux release ready: {archive_path.name} (SHA256: {sha[:12]}...)")
+    return archive_path
+
+def package_windows_release(bin_name: str):
+    pkg_name = f"PlaylistOrganizer-{VERSION}-windows-x64"
+    target_dir = STAGING_DIR / pkg_name
+    target_dir.mkdir(parents=True, exist_ok=True)
+
+    print(f"📁 Assembling Windows binary release in {target_dir}...")
+    pyinstaller_output = DIST_DIR / bin_name
+    if pyinstaller_output.exists():
+        shutil.copytree(pyinstaller_output, target_dir, dirs_exist_ok=True)
+
+    for item in ("run.py", "start.bat", "README.md", "LICENSE", ".env.example", "logo.svg", "requirements.txt"):
+        src = PROJECT_ROOT / item
+        if src.exists():
+            shutil.copy2(src, target_dir)
+
+    archive_path = DIST_DIR / f"{pkg_name}.zip"
+    print(f"🗜️ Creating archive {archive_path.name}...")
+    with zipfile.ZipFile(archive_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+        for root, _, files in os.walk(target_dir):
+            for file in files:
+                abs_f = Path(root) / file
+                rel_f = abs_f.relative_to(STAGING_DIR)
+                zipf.write(abs_f, arcname=rel_f)
+
+    sha = compute_sha256(archive_path)
+    (DIST_DIR / f"{pkg_name}.zip.sha256").write_text(f"{sha}  {archive_path.name}\n")
+    print(f"✅ Windows binary release ready: {archive_path.name} (SHA256: {sha[:12]}...)")
     return archive_path
 
 def package_windows_portable():
@@ -116,6 +145,8 @@ def main():
     bin_name = build_pyinstaller_binary()
     if sys.platform != "win32":
         package_linux_release(bin_name)
+    else:
+        package_windows_release(bin_name)
     package_windows_portable()
 
     # Generate unified SHA256SUMS.txt

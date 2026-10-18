@@ -1,3 +1,13 @@
+# Spotify Playlist Genre Organizer - Systemd User Service Unit
+# Installation:
+#   1. Copy to user systemd directory:
+#      mkdir -p ~/.config/systemd/user
+#      cp playlist-organizer.service ~/.config/systemd/user/
+#   2. Adjust WorkingDirectory and ExecStart to your actual installation directory.
+#   3. Enable and start:
+#      systemctl --user daemon-reload
+#      systemctl --user enable --now playlist-organizer
+#
 [Unit]
 Description=Spotify Playlist Genre Organizer Service
 After=network.target

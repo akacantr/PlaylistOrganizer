@@ -19,6 +19,16 @@ echo -e "${CYAN}========================================================${NC}"
 echo -e "${BOLD}  🎵 Spotify Playlist Genre Organizer Starting...${NC}"
 echo -e "${CYAN}========================================================${NC}"
 
+# If standalone binary exists, run it directly without requiring Python/venv
+if [ -f "$SCRIPT_DIR/playlist-organizer" ]; then
+    if [ ! -x "$SCRIPT_DIR/playlist-organizer" ]; then
+        chmod +x "$SCRIPT_DIR/playlist-organizer"
+    fi
+    echo -e "Starting standalone binary: ${GREEN}playlist-organizer${NC}"
+    exec "$SCRIPT_DIR/playlist-organizer" "$@"
+fi
+
+# Otherwise, run from source repository with Python
 # Find python3 or python (must be >= 3.9)
 PYTHON_BIN=""
 for candidate in python3 python; do
@@ -40,17 +50,31 @@ echo -e "Using Python: ${GREEN}$($PYTHON_BIN --version)${NC}"
 
 # Virtual environment management
 VENV_DIR="$SCRIPT_DIR/.venv"
-if [ ! -d "$VENV_DIR" ]; then
+STAMP_FILE="$VENV_DIR/.deps_installed"
+
+if [ ! -d "$VENV_DIR" ] || [ ! -f "$VENV_DIR/bin/activate" ]; then
     echo -e "${YELLOW}Creating virtual environment in .venv...${NC}"
-    "$PYTHON_BIN" -m venv "$VENV_DIR"
-    echo -e "${YELLOW}Installing dependencies from requirements.txt...${NC}"
-    "$VENV_DIR/bin/pip" install --upgrade pip
-    "$VENV_DIR/bin/pip" install -r "$SCRIPT_DIR/requirements.txt"
+    if ! "$PYTHON_BIN" -m venv "$VENV_DIR"; then
+        echo -e "${RED}[ERROR] Failed to create virtual environment!${NC}"
+        echo "On Debian/Ubuntu systems, install the python3-venv package:"
+        echo "    sudo apt install python3-venv"
+        exit 1
+    fi
+    rm -f "$STAMP_FILE"
 fi
 
-# Activate virtualenv
 # shellcheck disable=SC1091
 source "$VENV_DIR/bin/activate"
+
+# Install or update dependencies if requirements.txt changed or stamp is missing
+if [ -f "$SCRIPT_DIR/requirements.txt" ]; then
+    if [ ! -f "$STAMP_FILE" ] || [ "$SCRIPT_DIR/requirements.txt" -nt "$STAMP_FILE" ]; then
+        echo -e "${YELLOW}Installing/updating dependencies from requirements.txt...${NC}"
+        python -m pip install --upgrade pip
+        python -m pip install -r "$SCRIPT_DIR/requirements.txt"
+        touch "$STAMP_FILE"
+    fi
+fi
 
 # Launch application
 exec python run.py "$@"
