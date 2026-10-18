@@ -56,6 +56,54 @@ jobs:
           cd ..
           sha256sum "${PKG_NAME}.tar.gz" > "${PKG_NAME}.tar.gz.sha256"
 
+      - name: Build Linux AppImage
+        run: |
+          TAG="${{ github.ref_type == 'tag' && github.ref_name || inputs.tag_name }}"
+          APPIMAGE_NAME="PlaylistOrganizer-${TAG}-linux-x86_64.AppImage"
+          APPDIR="pkg_staging/AppDir"
+          rm -rf "${APPDIR}"
+          mkdir -p "${APPDIR}/usr/bin"
+          mkdir -p "${APPDIR}/usr/share/applications"
+          mkdir -p "${APPDIR}/usr/share/icons/hicolor/scalable/apps"
+
+          cp -r dist/playlist-organizer/* "${APPDIR}/usr/bin/"
+          cp run.py README.md LICENSE .env.example logo.svg requirements.txt "${APPDIR}/usr/bin/"
+
+          cat << 'EOF' > "${APPDIR}/playlist-organizer.desktop"
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Spotify Playlist Genre Organizer
+GenericName=Playlist Organizer
+Comment=Organize, filter, and split your Spotify playlists by genre
+Exec=playlist-organizer
+Icon=playlist-organizer
+Terminal=false
+Categories=AudioVideo;Audio;Utility;
+Keywords=spotify;playlist;music;genre;organizer;
+StartupNotify=true
+EOF
+          cp "${APPDIR}/playlist-organizer.desktop" "${APPDIR}/usr/share/applications/"
+          cp logo.svg "${APPDIR}/playlist-organizer.svg"
+          cp logo.svg "${APPDIR}/usr/share/icons/hicolor/scalable/apps/playlist-organizer.svg"
+
+          cat << 'EOF' > "${APPDIR}/AppRun"
+#!/bin/sh
+SELF=$(readlink -f "$0")
+HERE=${SELF%/*}
+export PATH="${HERE}/usr/bin:${PATH}"
+export APPDIR="${HERE}"
+exec "${HERE}/usr/bin/playlist-organizer" "$@"
+EOF
+          chmod +x "${APPDIR}/AppRun" "${APPDIR}/usr/bin/playlist-organizer"
+
+          curl -sL https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage -o appimagetool
+          chmod +x appimagetool
+          ./appimagetool --appimage-extract
+          ARCH=x86_64 ./squashfs-root/AppRun "${APPDIR}" "${APPIMAGE_NAME}"
+          chmod +x "${APPIMAGE_NAME}"
+          sha256sum "${APPIMAGE_NAME}" > "${APPIMAGE_NAME}.sha256"
+
       - name: Upload Linux Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -63,6 +111,8 @@ jobs:
           path: |
             PlaylistOrganizer-*-linux-x86_64.tar.gz
             PlaylistOrganizer-*-linux-x86_64.tar.gz.sha256
+            PlaylistOrganizer-*-linux-x86_64.AppImage
+            PlaylistOrganizer-*-linux-x86_64.AppImage.sha256
 
   build-windows:
     name: Build Windows Release Bundle
@@ -83,28 +133,51 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller
 
-      - name: Build Standalone Executable with PyInstaller
+      - name: Build Standalone Executables with PyInstaller
         shell: pwsh
         run: |
-          pyinstaller --noconfirm --onedir --name PlaylistOrganizer --add-data "app/templates;app/templates" --add-data "app/static;app/static" --add-data "data;data" run.py
+          $tag = if ('${{ github.ref_type }}' -eq 'tag') { '${{ github.ref_name }}' } else { '${{ inputs.tag_name }}' }
+          # 1. Standalone single-file executable (.exe)
+          pyinstaller --noconfirm --onefile --name "PlaylistOrganizer-$tag-windows-x64" `
+            --add-data "app/templates;app/templates" `
+            --add-data "app/static;app/static" `
+            --add-data "data;data" `
+            run.py
+          
+          # 2. Standalone directory package
+          pyinstaller --noconfirm --onedir --name "PlaylistOrganizer" `
+            --add-data "app/templates;app/templates" `
+            --add-data "app/static;app/static" `
+            --add-data "data;data" `
+            run.py
 
       - name: Package Windows Distribution
         shell: pwsh
         run: |
           $tag = if ('${{ github.ref_type }}' -eq 'tag') { '${{ github.ref_name }}' } else { '${{ inputs.tag_name }}' }
           $pkgName = "PlaylistOrganizer-$tag-windows-x64"
+          $exeName = "$pkgName.exe"
+
+          # 1. Standalone .exe hash and copy to root
+          Copy-Item -Path "dist\$exeName" -Destination "$exeName"
+          $exeHash = (Get-FileHash "$exeName" -Algorithm SHA256).Hash.ToLower()
+          "$exeHash  $exeName`n" | Out-File -FilePath "$exeName.sha256" -Encoding ascii -NoNewline
+
+          # 2. Package directory into zip
           New-Item -ItemType Directory -Path "pkg_staging\$pkgName" -Force
           Copy-Item -Path "dist\PlaylistOrganizer\*" -Destination "pkg_staging\$pkgName" -Recurse
           Copy-Item -Path "run.py", "start.bat", "README.md", "LICENSE", ".env.example", "logo.svg", "requirements.txt" -Destination "pkg_staging\$pkgName"
           Compress-Archive -Path "pkg_staging\$pkgName" -DestinationPath "$pkgName.zip"
-          $hash = (Get-FileHash "$pkgName.zip" -Algorithm SHA256).Hash.ToLower()
-          "$hash  $pkgName.zip`n" | Out-File -FilePath "$pkgName.zip.sha256" -Encoding ascii -NoNewline
+          $zipHash = (Get-FileHash "$pkgName.zip" -Algorithm SHA256).Hash.ToLower()
+          "$zipHash  $pkgName.zip`n" | Out-File -FilePath "$pkgName.zip.sha256" -Encoding ascii -NoNewline
 
       - name: Upload Windows Artifact
         uses: actions/upload-artifact@v4
         with:
           name: windows-release
           path: |
+            PlaylistOrganizer-*-windows-x64.exe
+            PlaylistOrganizer-*-windows-x64.exe.sha256
             PlaylistOrganizer-*-windows-x64.zip
             PlaylistOrganizer-*-windows-x64.zip.sha256
 
@@ -128,7 +201,7 @@ jobs:
       - name: Generate Unified SHA256SUMS
         run: |
           cd release_artifacts
-          sha256sum *.tar.gz *.zip > SHA256SUMS.txt
+          sha256sum *.tar.gz *.zip *.AppImage *.exe > SHA256SUMS.txt
           cat SHA256SUMS.txt
 
       - name: Create GitHub Release
@@ -142,5 +215,7 @@ jobs:
           files: |
             release_artifacts/*.tar.gz
             release_artifacts/*.zip
+            release_artifacts/*.AppImage
+            release_artifacts/*.exe
             release_artifacts/*.sha256
             release_artifacts/SHA256SUMS.txt

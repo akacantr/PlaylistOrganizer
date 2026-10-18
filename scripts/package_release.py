@@ -93,12 +93,121 @@ def package_linux_release(bin_name: str):
     return archive_path
 
 
-def package_windows_release(bin_name: str):
+def package_appimage(bin_name: str = "playlist-organizer"):
+    print(f"📦 Assembling Linux AppImage bundle...")
+    pkg_name = f"PlaylistOrganizer-{VERSION}-linux-x86_64"
+    appdir = STAGING_DIR / "AppDir"
+    if appdir.exists():
+        shutil.rmtree(appdir)
+
+    usr_bin = appdir / "usr" / "bin"
+    usr_bin.mkdir(parents=True, exist_ok=True)
+    (appdir / "usr" / "share" / "applications").mkdir(parents=True, exist_ok=True)
+    (appdir / "usr" / "share" / "icons" / "hicolor" / "scalable" / "apps").mkdir(parents=True, exist_ok=True)
+
+    pyinstaller_output = DIST_DIR / bin_name
+    if pyinstaller_output.exists():
+        shutil.copytree(pyinstaller_output, usr_bin, dirs_exist_ok=True)
+
+    for item in ("run.py", "README.md", "LICENSE", ".env.example", "logo.svg", "requirements.txt"):
+        src = PROJECT_ROOT / item
+        if src.exists():
+            shutil.copy2(src, usr_bin)
+
+    desktop_content = """[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Spotify Playlist Genre Organizer
+GenericName=Playlist Organizer
+Comment=Organize, filter, and split your Spotify playlists by genre
+Exec=playlist-organizer
+Icon=playlist-organizer
+Terminal=false
+Categories=AudioVideo;Audio;Utility;
+Keywords=spotify;playlist;music;genre;organizer;
+StartupNotify=true
+"""
+    (appdir / "playlist-organizer.desktop").write_text(desktop_content, encoding="utf-8")
+    (appdir / "usr" / "share" / "applications" / "playlist-organizer.desktop").write_text(desktop_content, encoding="utf-8")
+
+    logo = PROJECT_ROOT / "logo.svg"
+    if logo.exists():
+        shutil.copy2(logo, appdir / "playlist-organizer.svg")
+        shutil.copy2(logo, appdir / "usr" / "share" / "icons" / "hicolor" / "scalable" / "apps" / "playlist-organizer.svg")
+
+    apprun_content = """#!/bin/sh
+SELF=$(readlink -f "$0")
+HERE=${SELF%/*}
+export PATH="${HERE}/usr/bin:${PATH}"
+export APPDIR="${HERE}"
+exec "${HERE}/usr/bin/playlist-organizer" "$@"
+"""
+    apprun_path = appdir / "AppRun"
+    apprun_path.write_text(apprun_content, encoding="utf-8")
+    apprun_path.chmod(0o755)
+
+    bin_path = usr_bin / bin_name
+    if bin_path.exists():
+        bin_path.chmod(0o755)
+
+    appimage_file = DIST_DIR / f"{pkg_name}.AppImage"
+
+    # Search for appimagetool
+    appimagetool = shutil.which("appimagetool")
+    if not appimagetool:
+        candidates = [
+            Path("/tmp/squashfs-root/AppRun"),
+            PROJECT_ROOT / "squashfs-root" / "AppRun",
+            PROJECT_ROOT / "appimagetool"
+        ]
+        for c in candidates:
+            if c.exists() and os.access(c, os.X_OK):
+                appimagetool = str(c)
+                break
+
+    if not appimagetool:
+        print("⚠️ appimagetool not found. Staging AppDir ready, skipping AppImage squashfs build.")
+        return None
+
+    print(f"🗜️ Building AppImage using {appimagetool}...")
+    env = dict(os.environ, ARCH="x86_64")
+    subprocess.run([appimagetool, str(appdir), str(appimage_file)], env=env, check=True)
+
+    sha = compute_sha256(appimage_file)
+    (DIST_DIR / f"{pkg_name}.AppImage.sha256").write_text(f"{sha}  {appimage_file.name}\n")
+    print(f"✅ Linux AppImage ready: {appimage_file.name} (SHA256: {sha[:12]}...)")
+    return appimage_file
+
+
+def package_windows_release(bin_name: str = "PlaylistOrganizer"):
     pkg_name = f"PlaylistOrganizer-{VERSION}-windows-x64"
     target_dir = STAGING_DIR / pkg_name
     target_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"📁 Assembling Windows binary release in {target_dir}...")
+    # Standalone onefile .exe
+    exe_name = f"{pkg_name}.exe"
+    exe_path = DIST_DIR / exe_name
+    try:
+        print(f"📦 Compiling standalone onefile Windows executable...")
+        cmd = [
+            sys.executable, "-m", "PyInstaller",
+            "--noconfirm",
+            "--onefile",
+            "--name", pkg_name,
+            "--add-data", "app/templates;app/templates",
+            "--add-data", "app/static;app/static",
+            "--add-data", "data;data",
+            "run.py"
+        ]
+        subprocess.run(cmd, cwd=PROJECT_ROOT, check=True)
+        if exe_path.exists():
+            sha = compute_sha256(exe_path)
+            (DIST_DIR / f"{exe_name}.sha256").write_text(f"{sha}  {exe_name}\n")
+            print(f"✅ Windows standalone executable ready: {exe_name} (SHA256: {sha[:12]}...)")
+    except Exception as e:
+        print(f"⚠️ Standalone onefile compilation notice: {e}")
+
+    print(f"📁 Assembling Windows directory release in {target_dir}...")
     pyinstaller_output = DIST_DIR / bin_name
     if pyinstaller_output.exists():
         shutil.copytree(pyinstaller_output, target_dir, dirs_exist_ok=True)
@@ -157,6 +266,7 @@ def main():
     bin_name = build_pyinstaller_binary()
     if sys.platform != "win32":
         package_linux_release(bin_name)
+        package_appimage(bin_name)
     else:
         package_windows_release(bin_name)
     package_windows_portable()
@@ -165,7 +275,7 @@ def main():
     print("📝 Generating unified SHA256SUMS.txt...")
     sums = []
     for f in DIST_DIR.glob("*"):
-        if f.suffix in (".gz", ".zip"):
+        if f.suffix in (".gz", ".zip", ".AppImage", ".exe"):
             sums.append(f"{compute_sha256(f)}  {f.name}\n")
     (DIST_DIR / "SHA256SUMS.txt").write_text("".join(sorted(sums)))
     print("🎉 All packaging completed successfully!")

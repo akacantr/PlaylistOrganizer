@@ -5,6 +5,19 @@ from dotenv import load_dotenv, set_key
 
 def get_base_dir() -> Path:
     if getattr(sys, "frozen", False):
+        # When running inside an AppImage, the bundle mount is read-only.
+        # Store persistent configuration (.env, data cache) in user config directory,
+        # or alongside the AppImage if a portable .env already exists there.
+        if os.environ.get("APPDIR") or os.environ.get("APPIMAGE"):
+            appimage_path = os.environ.get("APPIMAGE")
+            if appimage_path:
+                portable_dir = Path(appimage_path).resolve().parent
+                if (portable_dir / ".env").exists():
+                    return portable_dir
+            xdg_config = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
+            config_dir = xdg_config / "playlist-organizer"
+            config_dir.mkdir(parents=True, exist_ok=True)
+            return config_dir
         return Path(sys.executable).resolve().parent
     return Path(__file__).resolve().parent.parent
 

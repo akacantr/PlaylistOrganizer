@@ -88,8 +88,10 @@ Pre-packaged release bundles are available on the [GitHub Releases page](https:/
 
 | Platform | Package | Description | Quick Run |
 | :--- | :--- | :--- | :--- |
-| **Linux (x86_64)** | [`PlaylistOrganizer-v1.0.0-linux-x86_64.tar.gz`](https://github.com/akacantr/PlaylistOrganizer/releases) | Standalone Linux binary distribution. No Python installation required! | `tar -xvf PlaylistOrganizer-*.tar.gz && cd PlaylistOrganizer-* && ./playlist-organizer` |
-| **Windows (x64)** | [`PlaylistOrganizer-v1.0.0-windows-x64.zip`](https://github.com/akacantr/PlaylistOrganizer/releases) | Standalone Windows distribution including `PlaylistOrganizer.exe` and `start.bat`. | Extract zip and double-click `PlaylistOrganizer.exe` or `start.bat` |
+| **Linux (AppImage)** | [`PlaylistOrganizer-v1.0.0-linux-x86_64.AppImage`](https://github.com/akacantr/PlaylistOrganizer/releases) | Universal single-file Linux executable. No installation or dependencies needed! | `chmod +x PlaylistOrganizer-*.AppImage && ./PlaylistOrganizer-*.AppImage` |
+| **Linux (Tarball)** | [`PlaylistOrganizer-v1.0.0-linux-x86_64.tar.gz`](https://github.com/akacantr/PlaylistOrganizer/releases) | Standalone Linux binary directory distribution with desktop launcher scripts. | `tar -xvf PlaylistOrganizer-*.tar.gz && cd PlaylistOrganizer-* && ./playlist-organizer` |
+| **Windows (.exe)** | [`PlaylistOrganizer-v1.0.0-windows-x64.exe`](https://github.com/akacantr/PlaylistOrganizer/releases) | Standalone single-file Windows executable. Just download and run! | Double-click `PlaylistOrganizer-*.exe` |
+| **Windows (Zip)** | [`PlaylistOrganizer-v1.0.0-windows-x64.zip`](https://github.com/akacantr/PlaylistOrganizer/releases) | Standalone Windows distribution including `PlaylistOrganizer.exe` and `start.bat`. | Extract zip and double-click `PlaylistOrganizer.exe` or `start.bat` |
 | **Portable Source** | [`PlaylistOrganizer-v1.0.0-windows-portable.zip`](https://github.com/akacantr/PlaylistOrganizer/releases) | Complete portable bundle for all systems with Python 3.9+. | Extract zip, run `./start.sh` (Linux) or `start.bat` (Windows) |
 
 Each release package includes cryptographic verification hashes (`SHA256SUMS.txt`).
@@ -119,7 +121,15 @@ The application has been ported to Linux with native shell launchers, desktop en
    ./start.sh --host 0.0.0.0 --port 9000 --no-browser
    ```
 
-### Method 2: Standalone Linux Executable
+### Method 2: Universal Linux AppImage (No Installation)
+
+Download `PlaylistOrganizer-v1.0.0-linux-x86_64.AppImage` from [Releases](https://github.com/akacantr/PlaylistOrganizer/releases), mark executable, and run:
+```bash
+chmod +x PlaylistOrganizer-*-linux-x86_64.AppImage
+./PlaylistOrganizer-*-linux-x86_64.AppImage
+```
+
+### Method 3: Standalone Linux Tarball Archive
 
 Download the pre-compiled standalone package from [Releases](https://github.com/akacantr/PlaylistOrganizer/releases):
 ```bash
@@ -128,7 +138,7 @@ cd PlaylistOrganizer-v1.0.0-linux-x86_64
 ./start.sh    # or directly: ./playlist-organizer
 ```
 
-### Method 3: Desktop App Menu Integration (`.desktop`)
+### Method 4: Desktop App Menu Integration (`.desktop`)
 
 To launch Playlist Organizer directly from your desktop application launcher (GNOME, KDE Plasma, XFCE, Cinnamon, etc.):
 ```bash
@@ -142,7 +152,7 @@ To uninstall the desktop shortcut:
 ./install-desktop.sh --uninstall
 ```
 
-### Method 4: Systemd User Service (Background Daemon)
+### Method 5: Systemd User Service (Background Daemon)
 
 If you are running the application on a headless home server or want it to start automatically upon login:
 ```bash
@@ -157,7 +167,7 @@ To view logs:
 journalctl --user -u playlist-organizer -f
 ```
 
-### Method 5: Docker & Docker Compose
+### Method 6: Docker & Docker Compose
 
 Deploy with Docker in seconds:
 ```bash
@@ -187,9 +197,10 @@ Navigate to `http://localhost:8888` in your browser.
    ```
 3. Your browser will automatically open at `http://127.0.0.1:8888`.
 
-### Method 2: Standalone Windows Executable
+### Method 2: Standalone Windows Executable (.exe) or Zip
 
-Download `PlaylistOrganizer-v1.0.0-windows-x64.zip` from [Releases](https://github.com/akacantr/PlaylistOrganizer/releases), unzip, and double-click `PlaylistOrganizer.exe`.
+- **Single .exe (Zero install)**: Download `PlaylistOrganizer-v1.0.0-windows-x64.exe` from [Releases](https://github.com/akacantr/PlaylistOrganizer/releases) and double-click to run.
+- **Zip Archive**: Download `PlaylistOrganizer-v1.0.0-windows-x64.zip`, extract, and double-click `PlaylistOrganizer.exe` or `start.bat`.
 
 ---
 

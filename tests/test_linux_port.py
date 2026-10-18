@@ -2,17 +2,20 @@ import os
 import sys
 import subprocess
 from pathlib import Path
+import pytest
 from app import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 class TestLinuxPort:
+    @pytest.mark.skipif(sys.platform == "win32", reason="POSIX executable bit checks apply to POSIX only")
     def test_start_sh_exists_and_executable(self):
         start_sh = BASE_DIR / "start.sh"
         assert start_sh.exists(), "start.sh does not exist"
         assert os.access(start_sh, os.X_OK), "start.sh is not executable"
 
+    @pytest.mark.skipif(sys.platform == "win32", reason="POSIX executable bit checks apply to POSIX only")
     def test_install_desktop_sh_exists_and_executable(self):
         script = BASE_DIR / "install-desktop.sh"
         assert script.exists(), "install-desktop.sh does not exist"
@@ -55,6 +58,7 @@ class TestLinuxPort:
         assert base_dir.exists()
         assert (base_dir / "app").exists()
 
+    @pytest.mark.skipif(sys.platform == "win32", reason="Linux shell script execution requires POSIX environment")
     def test_start_sh_binary_dispatch(self, tmp_path):
         import shutil
         script = tmp_path / "start.sh"
@@ -79,8 +83,14 @@ class TestLinuxPort:
         assert "--uninstall" in content
         assert "rm -f" in content
 
+    @pytest.mark.skipif(sys.platform == "win32", reason="Linux shell script execution requires POSIX environment")
     def test_start_sh_help(self):
         res = subprocess.run([str(BASE_DIR / "start.sh"), "--help"], capture_output=True, text=True)
         assert res.returncode == 0
         assert "--host" in res.stdout
         assert "--port" in res.stdout
+
+    def test_appimage_packaging_support(self):
+        from scripts import package_release
+        assert hasattr(package_release, "package_appimage")
+        assert hasattr(package_release, "package_windows_release")
