@@ -183,11 +183,11 @@ def analyze_playlist_tracks(raw_tracks: List[Dict[str, Any]], artists_map: Dict[
         artist_ids = [a.get("id") for a in track_artists if a.get("id")]
         unique_artists_set.update(artist_ids)
 
-        album = track.get("album", {})
-        album_name = album.get("name", "")
-        album_images = album.get("images", [])
+        album = track.get("album") or {}
+        album_name = album.get("name") or ""
+        album_images = album.get("images") or []
         image_url = album_images[0].get("url") if album_images else ""
-        spotify_url = track.get("external_urls", {}).get("spotify", "")
+        spotify_url = (track.get("external_urls") or {}).get("spotify") or ""
 
         track_raw_genres = set()
         for a_id in artist_ids:

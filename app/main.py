@@ -180,13 +180,15 @@ def analyze_playlist(playlist_id: str):
 
     artist_names_map = {}
     for item in raw_tracks:
-        track = item.get("track")
-        if track and track.get("artists"):
-            for a in track["artists"]:
-                aid = a.get("id")
-                aname = a.get("name")
-                if aid and aname:
-                    artist_names_map[aid] = aname
+        if isinstance(item, dict):
+            track = item.get("track")
+            if isinstance(track, dict):
+                for a in (track.get("artists") or []):
+                    if isinstance(a, dict):
+                        aid = a.get("id")
+                        aname = a.get("name")
+                        if aid and aname:
+                            artist_names_map[aid] = aname
 
     artists_map = spotify_client.batch_get_artists_genres(artist_names_map)
 

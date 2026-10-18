@@ -199,7 +199,7 @@ exec "${HERE}/usr/bin/playlist-organizer" "$@"
 
     print(f"🗜️ Building AppImage using {appimagetool}...")
     env = dict(os.environ, ARCH="x86_64")
-    subprocess.run([appimagetool, str(appdir), str(appimage_file)], env=env, check=True)
+    subprocess.run([appimagetool, "--no-appstream", str(appdir), str(appimage_file)], env=env, check=True)
 
     sha = compute_sha256(appimage_file)
     (DIST_DIR / f"{pkg_name}.AppImage.sha256").write_text(f"{sha}  {appimage_file.name}\n")

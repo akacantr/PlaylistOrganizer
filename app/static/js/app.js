@@ -481,9 +481,9 @@ const app = {
             }`;
 
             chip.innerHTML = `
-                <span onclick="app.toggleGenreFilter('${this.escapeHtml(g.name)}', event)">${this.escapeHtml(g.name)}</span>
+                <span data-genre="${this.escapeHtml(g.name)}" onclick="app.toggleGenreFilter(this.dataset.genre, event)">${this.escapeHtml(g.name)}</span>
                 <span class="text-[10px] ${isSelected ? 'text-black/80 font-bold' : 'text-spotify-subdued'}">(${g.count})</span>
-                <button onclick="app.quickCreateGenrePlaylist('${this.escapeHtml(g.name)}', event)" class="p-0.5 rounded-full hover:bg-black/20 ${isSelected ? 'text-black' : 'text-spotify-green'}" title="'${this.escapeHtml(g.name)}' için Yeni Playlist Yap">
+                <button data-genre="${this.escapeHtml(g.name)}" onclick="app.quickCreateGenrePlaylist(this.dataset.genre, event)" class="p-0.5 rounded-full hover:bg-black/20 ${isSelected ? 'text-black' : 'text-spotify-green'}" title="'${this.escapeHtml(g.name)}' için Yeni Playlist Yap">
                     <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
                 </button>
             `;
@@ -559,18 +559,18 @@ const app = {
             const genresToDisplay = (this.state.genreMode === 'macro' ? t.macro_genres : t.raw_genres).slice(0, 3);
 
             const genreBadgesHtml = genresToDisplay.map(g =>
-                `<span onclick="app.toggleGenreFilter('${this.escapeHtml(g)}')" class="inline-block px-2 py-0.5 rounded-full text-[10px] font-medium bg-white/5 hover:bg-spotify-green hover:text-black border border-white/10 text-spotify-subdued transition cursor-pointer mr-1 mb-1">${this.escapeHtml(g)}</span>`
+                `<span data-genre="${this.escapeHtml(g)}" onclick="app.toggleGenreFilter(this.dataset.genre)" class="inline-block px-2 py-0.5 rounded-full text-[10px] font-medium bg-white/5 hover:bg-spotify-green hover:text-black border border-white/10 text-spotify-subdued transition cursor-pointer mr-1 mb-1">${this.escapeHtml(g)}</span>`
             ).join('');
 
             const playBtnHtml = t.preview_url
-                ? `<button onclick="app.playPreview('${t.preview_url}', '${this.escapeHtml(t.name)}', '${this.escapeHtml(t.artists.join(', '))}', '${t.image_url}')" class="w-7 h-7 rounded-full bg-white/10 hover:bg-spotify-green hover:text-black text-white flex items-center justify-center transition" title="Önizlemeyi Dinle">
+                ? `<button data-preview="${this.escapeHtml(t.preview_url || '')}" data-name="${this.escapeHtml(t.name || '')}" data-artists="${this.escapeHtml((t.artists || []).join(', '))}" data-image="${this.escapeHtml(t.image_url || '')}" onclick="app.playPreview(this.dataset.preview, this.dataset.name, this.dataset.artists, this.dataset.image)" class="w-7 h-7 rounded-full bg-white/10 hover:bg-spotify-green hover:text-black text-white flex items-center justify-center transition" title="Önizlemeyi Dinle">
                      <i data-lucide="${isAudioPlaying ? 'pause' : 'play'}" class="w-3.5 h-3.5"></i>
                    </button>`
                 : `<span class="text-[10px] text-spotify-subdued/50">-</span>`;
 
             tr.innerHTML = `
                 <td class="p-3 text-center">
-                    <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="app.toggleTrackSelection('${t.id}', this.checked)" class="w-4 h-4 rounded accent-spotify-green cursor-pointer">
+                    <input type="checkbox" ${isChecked ? 'checked' : ''} data-id="${this.escapeHtml(t.id)}" onchange="app.toggleTrackSelection(this.dataset.id, this.checked)" class="w-4 h-4 rounded accent-spotify-green cursor-pointer">
                 </td>
                 <td class="p-3 text-center text-spotify-subdued">
                     ${playBtnHtml}
@@ -1068,8 +1068,8 @@ const app = {
     },
 
     escapeHtml(str) {
-        if (!str) return '';
-        return str
+        if (str === null || str === undefined) return '';
+        return String(str)
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;')
