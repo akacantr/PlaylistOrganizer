@@ -29,7 +29,7 @@ if ENV_PATH.exists():
 else:
     load_dotenv(override=True)
 
-DEFAULT_REDIRECT_URI = "http://127.0.0.1:8888/callback"
+DEFAULT_REDIRECT_URI = "http://127.0.0.1:8888/callback"  # NOSONAR
 SPOTIFY_SCOPES = [
     "user-read-private",
     "user-read-email",

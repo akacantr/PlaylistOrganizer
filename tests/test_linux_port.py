@@ -187,4 +187,3 @@ class TestLinuxPort:
             staging_dir = package_release.STAGING_DIR / pkg_name
             if staging_dir.exists():
                 shutil.rmtree(staging_dir, ignore_errors=True)
-

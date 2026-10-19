@@ -1,10 +1,9 @@
-import pytest
 from app.genre_classifier import (
     map_raw_genres_to_macro,
     infer_genres_from_track_metadata,
     analyze_playlist_tracks,
-    MACRO_RULES,
 )
+
 
 class TestMacroGenreMapping:
     def test_empty_raw_genres(self):

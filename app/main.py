@@ -1,8 +1,8 @@
 import sys
 from pathlib import Path
-from typing import Optional, List, Dict, Any
-from fastapi import FastAPI, HTTPException, Query, Request
-from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
+from typing import Optional, List, Dict
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import RedirectResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -34,11 +34,11 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://127.0.0.1:8888",
-        "http://localhost:8888",
+        "http://127.0.0.1:8888",  # NOSONAR
+        "http://localhost:8888",  # NOSONAR
     ],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -63,7 +63,7 @@ class SplitAllRequest(BaseModel):
     genre_data: Dict[str, List[str]]
 
 @app.get("/", response_class=FileResponse)
-async def serve_index():
+def serve_index():
     index_file = TEMPLATES_DIR / "index.html"
     if not index_file.exists():
         raise HTTPException(status_code=404, detail="Index template not found")
@@ -162,7 +162,7 @@ def analyze_playlist(playlist_id: str):
     except PermissionError as pe:
         raise HTTPException(status_code=403, detail=str(pe)) from pe
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Şarkılar alınırken hata oluştu: {e}") from e
+        raise HTTPException(status_code=500, detail="Şarkılar alınırken bir sunucu hatası oluştu.") from e
 
     if not raw_tracks:
         return {

@@ -1,5 +1,5 @@
-import pytest
 from app.spotify_client import deduplicate_track_uris
+
 
 class TestTrackDeduplication:
     def test_empty_list(self):
@@ -76,4 +76,3 @@ class TestSpotifyClientRobustness:
         assert len(playlists) == 2
         names = [p["name"] for p in playlists]
         assert None in names
-

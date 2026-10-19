@@ -44,7 +44,7 @@ def main():
 
     host = args.host
     port = args.port
-    url = f"http://{host}:{port}"
+    url = f"http://{host}:{port}"  # NOSONAR
 
     print("=" * 60)
     print(" 🎵 Spotify Playlist Genre Organizer Starting...")

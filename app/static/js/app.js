@@ -3,7 +3,7 @@ const app = {
         hasCredentials: false,
         isAuthenticated: false,
         user: null,
-        redirectUri: 'http://localhost:8888/callback',
+        redirectUri: 'http://127.0.0.1:8888/callback', // NOSONAR
         playlists: [],
         filteredPlaylists: [],
         activePlaylist: null,
@@ -27,7 +27,7 @@ const app = {
     init() {
         this.cacheDom();
         this.checkUrlParams();
-        this.loadStatus();
+        void this.loadStatus();
         this.setupAudioEvents();
     },
 
@@ -77,7 +77,7 @@ const app = {
 
             if (this.state.isAuthenticated && this.state.user) {
                 this.renderUser(this.state.user);
-                this.loadPlaylists();
+                await this.loadPlaylists();
                 this.showPlaylistsView();
             } else {
                 this.showAuthView();
@@ -279,7 +279,7 @@ const app = {
         this.state.filteredPlaylists.forEach(pl => {
             const card = document.createElement('div');
             card.className = 'glass-card p-4 rounded-2xl flex flex-col justify-between group cursor-pointer relative';
-            card.onclick = () => this.analyzePlaylist(pl.id);
+            card.onclick = () => { void this.analyzePlaylist(pl.id); };
 
             const imgHtml = pl.image_url
                 ? `<img src="${pl.image_url}" alt="${this.escapeHtml(pl.name)}" class="w-full aspect-square object-cover rounded-xl shadow-md mb-3 bg-white/5">`
@@ -483,7 +483,7 @@ const app = {
             chip.innerHTML = `
                 <span data-genre="${this.escapeHtml(g.name)}" onclick="app.toggleGenreFilter(this.dataset.genre, event)">${this.escapeHtml(g.name)}</span>
                 <span class="text-[10px] ${isSelected ? 'text-black/80 font-bold' : 'text-spotify-subdued'}">(${g.count})</span>
-                <button data-genre="${this.escapeHtml(g.name)}" onclick="app.quickCreateGenrePlaylist(this.dataset.genre, event)" class="p-0.5 rounded-full hover:bg-black/20 ${isSelected ? 'text-black' : 'text-spotify-green'}" title="'${this.escapeHtml(g.name)}' için Yeni Playlist Yap">
+                <button type="button" data-genre="${this.escapeHtml(g.name)}" aria-label="'${this.escapeHtml(g.name)}' için Yeni Playlist Yap" onclick="app.quickCreateGenrePlaylist(this.dataset.genre, event)" class="p-0.5 rounded-full hover:bg-black/20 ${isSelected ? 'text-black' : 'text-spotify-green'}" title="'${this.escapeHtml(g.name)}' için Yeni Playlist Yap">
                     <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
                 </button>
             `;
@@ -563,14 +563,14 @@ const app = {
             ).join('');
 
             const playBtnHtml = t.preview_url
-                ? `<button data-preview="${this.escapeHtml(t.preview_url || '')}" data-name="${this.escapeHtml(t.name || '')}" data-artists="${this.escapeHtml((t.artists || []).join(', '))}" data-image="${this.escapeHtml(t.image_url || '')}" onclick="app.playPreview(this.dataset.preview, this.dataset.name, this.dataset.artists, this.dataset.image)" class="w-7 h-7 rounded-full bg-white/10 hover:bg-spotify-green hover:text-black text-white flex items-center justify-center transition" title="Önizlemeyi Dinle">
+                ? `<button type="button" data-preview="${this.escapeHtml(t.preview_url || '')}" data-name="${this.escapeHtml(t.name || '')}" data-artists="${this.escapeHtml((t.artists || []).join(', '))}" data-image="${this.escapeHtml(t.image_url || '')}" aria-label="Önizlemeyi Dinle" onclick="app.playPreview(this.dataset.preview, this.dataset.name, this.dataset.artists, this.dataset.image)" class="w-7 h-7 rounded-full bg-white/10 hover:bg-spotify-green hover:text-black text-white flex items-center justify-center transition" title="Önizlemeyi Dinle">
                      <i data-lucide="${isAudioPlaying ? 'pause' : 'play'}" class="w-3.5 h-3.5"></i>
                    </button>`
                 : `<span class="text-[10px] text-spotify-subdued/50">-</span>`;
 
             tr.innerHTML = `
                 <td class="p-3 text-center">
-                    <input type="checkbox" ${isChecked ? 'checked' : ''} data-id="${this.escapeHtml(t.id)}" onchange="app.toggleTrackSelection(this.dataset.id, this.checked)" class="w-4 h-4 rounded accent-spotify-green cursor-pointer">
+                    <input type="checkbox" ${isChecked ? 'checked' : ''} data-id="${this.escapeHtml(t.id)}" aria-label="Şarkıyı seç" onchange="app.toggleTrackSelection(this.dataset.id, this.checked)" class="w-4 h-4 rounded accent-spotify-green cursor-pointer">
                 </td>
                 <td class="p-3 text-center text-spotify-subdued">
                     ${playBtnHtml}
@@ -1009,7 +1009,7 @@ const app = {
                 body: JSON.stringify({
                     client_id: clientId,
                     client_secret: clientSecret,
-                    redirect_uri: redirectUri || 'http://localhost:8888/callback'
+                    redirect_uri: redirectUri || 'http://127.0.0.1:8888/callback' // NOSONAR
                 })
             });
 
@@ -1017,7 +1017,7 @@ const app = {
 
             this.showToast('Ayarlar kaydedildi!', 'success');
             this.closeSettingsModal();
-            this.loadStatus();
+            await this.loadStatus();
         } catch (e) {
             this.showToast('Hata: ' + e.message, 'error');
         }

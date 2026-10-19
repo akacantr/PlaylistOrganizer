@@ -1,12 +1,15 @@
+import concurrent.futures
+import json
 import os
 import sys
-import requests
-from pathlib import Path
+import threading
 from typing import Optional, Dict, Any, List
+import requests
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth, CacheFileHandler
 from spotipy.exceptions import SpotifyException
 
+from app.artist_db import CURATED_ARTISTS
 from . import config
 
 CACHE_PATH = config.BASE_DIR / ".spotify_token_cache"
@@ -87,8 +90,9 @@ def get_current_user_profile() -> Optional[Dict[str, Any]]:
     try:
         user = sp.current_user()
         avatar = ""
-        if user.get("images") and len(user["images"]) > 0:
-            avatar = user["images"][0].get("url", "")
+        user_images = user.get("images") or []
+        if isinstance(user_images, list) and len(user_images) > 0:
+            avatar = (user_images[0] or {}).get("url", "")
 
         profile = {
             "id": user.get("id"),
@@ -125,10 +129,10 @@ def get_user_playlists() -> List[Dict[str, Any]]:
                 if not pl:
                     continue
 
-                images = pl.get("images", [])
-                image_url = images[0].get("url") if images else ""
+                images = pl.get("images") or []
+                image_url = (images[0] or {}).get("url", "") if images else ""
 
-                owner = pl.get("owner", {})
+                owner = pl.get("owner") or {}
                 owner_id = owner.get("id", "")
                 owner_name = owner.get("display_name") or owner_id
                 is_mine = bool(my_id and owner_id == my_id)
@@ -164,9 +168,9 @@ def get_playlist_details(playlist_id: str) -> Optional[Dict[str, Any]]:
 
     try:
         pl = sp.playlist(playlist_id)
-        images = pl.get("images", [])
-        image_url = images[0].get("url") if images else ""
-        owner = pl.get("owner", {})
+        images = pl.get("images") or []
+        image_url = (images[0] or {}).get("url", "") if images else ""
+        owner = pl.get("owner") or {}
         owner_name = owner.get("display_name") or owner.get("id", "")
 
         profile = get_current_user_profile()
@@ -178,7 +182,7 @@ def get_playlist_details(playlist_id: str) -> Optional[Dict[str, Any]]:
             "name": pl.get("name"),
             "description": pl.get("description", ""),
             "image_url": image_url,
-            "total_tracks": pl.get("tracks", {}).get("total", 0) if pl.get("tracks") else 0,
+            "total_tracks": (pl.get("tracks") or {}).get("total", 0),
             "owner": owner_name,
             "is_mine": is_mine,
             "is_public": pl.get("public", False),
@@ -231,12 +235,6 @@ def get_all_playlist_tracks(playlist_id: str) -> List[Dict[str, Any]]:
     except Exception as e:
         print(f"Error fetching playlist tracks: {e}")
         raise
-
-import concurrent.futures
-
-import json
-import threading
-from app.artist_db import CURATED_ARTISTS
 
 HTTP_SESSION = requests.Session()
 
