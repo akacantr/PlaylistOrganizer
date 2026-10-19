@@ -62,9 +62,10 @@ jobs:
           cp target/release/playlist-organizer "${APPDIR}/usr/bin/"
           cp README.md LICENSE .env.example logo.svg "${APPDIR}/usr/bin/"
 
-          cp playlist-organizer.desktop "${APPDIR}/playlist-organizer.desktop"
-          cp playlist-organizer.desktop "${APPDIR}/usr/share/applications/"
+          cp scripts/playlist-organizer.desktop "${APPDIR}/playlist-organizer.desktop"
+          cp scripts/playlist-organizer.desktop "${APPDIR}/usr/share/applications/playlist-organizer.desktop"
           cp logo.svg "${APPDIR}/playlist-organizer.svg"
+          cp logo.svg "${APPDIR}/.DirIcon"
           cp logo.svg "${APPDIR}/usr/share/icons/hicolor/scalable/apps/playlist-organizer.svg"
           cp scripts/AppRun "${APPDIR}/AppRun"
           chmod +x "${APPDIR}/AppRun" "${APPDIR}/usr/bin/playlist-organizer"

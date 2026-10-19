@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Spotify Playlist Genre Organizer
+GenericName=Playlist Organizer
+Comment=Organize, filter, and split your Spotify playlists by genre
+Exec=playlist-organizer
+Icon=playlist-organizer
+Terminal=false
+Categories=AudioVideo;Audio;Utility;
+Keywords=spotify;playlist;music;genre;organizer;
+StartupNotify=true
